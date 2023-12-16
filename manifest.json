@@ -1,0 +1,16 @@
+{
+  "manifest_version": 2,
+  "name": "Phishing Detection Extension",
+  "version": "1.0",
+  "permissions": [
+    "activeTab",
+    "nativeMessaging",
+    "http://127.0.0.1:5000/"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_action": {
+    "default_popup": "popup.html"
+  }
+}
