@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extension Toggle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <label>
+    <input type="checkbox" id="toggleSwitch">
+    Enable Extension
+  </label>
+
+  <script>
+    // Save the current state of the extension in Chrome storage
+    document.getElementById('toggleSwitch').addEventListener('change', function() {
+      const isEnabled = this.checked;
+      chrome.storage.sync.set({ isEnabled: isEnabled });
+    });
+
+    // Retrieve the current state of the extension from Chrome storage
+    chrome.storage.sync.get('isEnabled', function(data) {
+      const isEnabled = data.isEnabled;
+      document.getElementById('toggleSwitch').checked = isEnabled;
+    });
+  </script>
+</body>
+</html>

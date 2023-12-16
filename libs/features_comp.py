@@ -17,10 +17,10 @@ def ip(url):
     try:
         # Parse the URL to get the hostname
         hostname = urlparse(url).hostname
-        
+
         # Try to resolve the hostname to an IP address
         ip_address = socket.gethostbyname(hostname)
-        
+
         # Check if the resolved IP address is the same as the original hostname
         return ip_address == hostname
     except:
@@ -186,12 +186,20 @@ def path_extension(url):
     return '.' in path
 
 def nb_redirection(url):
-    response = requests.head(url, allow_redirects=True)
-    return len(response.history)
+    try:
+        response = requests.head(url, allow_redirects=True)
+        return len(response.history)
+    except Exception as e:
+        print(f"Error counting redirections: {e}")
+        return 0
 
 def nb_external_redirection(url):
-    response = requests.head(url, allow_redirects=True)
-    return sum(urlparse(url).netloc not in urlparse(r.url).netloc for r in response.history)
+    try:
+        response = requests.head(url, allow_redirects=True)
+        return sum(urlparse(url).netloc not in urlparse(r.url).netloc for r in response.history)
+    except Exception as e:
+        print(f"Error counting external redirections: {e}")
+        return 0
 
 def length_words_raw(url):
     words = re.findall(r'\w+', url)
@@ -296,24 +304,40 @@ def nb_extCSS(url):
         return 0
 
 def ratio_intRedirection(url):
-    response = requests.head(url, allow_redirects=True)
-    int_redirections = sum(urlparse(r.url).netloc == urlparse(url).netloc for r in response.history)
-    return int_redirections / len(response.history) if len(response.history) > 0 else 0
+    try:
+        response = requests.head(url, allow_redirects=True)
+        int_redirections = sum(urlparse(r.url).netloc == urlparse(url).netloc for r in response.history)
+        return int_redirections / len(response.history) if len(response.history) > 0 else 0
+    except Exception as e:
+        print(f"Error fetching redirections: {e}")
+        return 0
 
 def ratio_extRedirection(url):
-    response = requests.head(url, allow_redirects=True)
-    ext_redirections = sum(urlparse(r.url).netloc != urlparse(url).netloc for r in response.history)
-    return ext_redirections / len(response.history) if len(response.history) > 0 else 0
+    try:
+        response = requests.head(url, allow_redirects=True)
+        ext_redirections = sum(urlparse(r.url).netloc != urlparse(url).netloc for r in response.history)
+        return ext_redirections / len(response.history) if len(response.history) > 0 else 0
+    except Exception as e:
+        print(f"Error fetching external redirections: {e}")
+        return 0
 
 def ratio_intErrors(url):
-    response = requests.head(url, allow_redirects=True)
-    int_errors = sum(r.status_code >= 400 and r.status_code < 500 for r in response.history)
-    return int_errors / len(response.history) if len(response.history) > 0 else 0
+    try:
+        response = requests.head(url, allow_redirects=True)
+        int_errors = sum(r.status_code >= 400 and r.status_code < 500 for r in response.history)
+        return int_errors / len(response.history) if len(response.history) > 0 else 0
+    except Exception as e:
+        print(f"Error fetching errors: {e}")
+        return 0
 
 def ratio_extErrors(url):
-    response = requests.head(url, allow_redirects=True)
-    ext_errors = sum(r.status_code >= 400 and r.status_code < 500 for r in response.history)
-    return ext_errors / len(response.history) if len(response.history) > 0 else 0
+    try:
+        response = requests.head(url, allow_redirects=True)
+        ext_errors = sum(r.status_code >= 400 and r.status_code < 500 for r in response.history)
+        return ext_errors / len(response.history) if len(response.history) > 0 else 0
+    except Exception as e:
+        print(f"Error fetching external errors: {e}")
+        return 0
 
 def login_form(url):
     try:
@@ -323,7 +347,7 @@ def login_form(url):
     except Exception as e:
         print(f"Error fetching login form: {e}")
         return 0
-    
+
 def external_favicon(url):
     try:
         response = requests.get(url)
@@ -333,7 +357,7 @@ def external_favicon(url):
     except Exception as e:
         print(f"Error fetching external favicon information: {e}")
         return 0
-    
+
 def links_in_tags(url):
     try:
         response = requests.get(url)
@@ -342,7 +366,7 @@ def links_in_tags(url):
     except Exception as e:
         print(f"Error fetching hyperlinks: {e}")
         return 0
-    
+
 def submit_email(url):
     try:
         response = requests.get(url)
@@ -351,7 +375,7 @@ def submit_email(url):
     except Exception as e:
         print(f"Error fetching email submission form: {e}")
         return 0
-    
+
 def ratio_intMedia(url):
     try:
         response = requests.get(url)
@@ -371,7 +395,7 @@ def ratio_intMedia(url):
     except Exception as e:
         print(f"Error calculating ratio of internal media: {e}")
         return 0
-    
+
 def ratio_extMedia(url):
     try:
         response = requests.get(url)

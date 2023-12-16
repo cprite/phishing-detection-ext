@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Warning</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            text-align: center;
+            background-color: #ecf0f1;
+        }
+
+        h1 {
+            color: #e74c3c;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            margin: 0 10px;
+        }
+
+        #proceedBtn {
+            background-color: rgb(255, 25, 0);
+            color: white;
+        }
+
+        #goBackBtn {
+            background-color: #1fe709;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #2c3e50;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="warning.png" alt="Warning Icon">
+        <h1>Phishing Warning!</h1>
+        <p>This website may be a phishing site. Proceed with caution.</p>
+        <button id="proceedBtn" onclick="proceedToURL()">Proceed to URL</button>
+        <button id="goBackBtn" onclick="goBack()">Go Back</button>
+    </div>
+
+    <script>
+        function proceedToURL() {
+            // Replace 'YOUR_ACTUAL_URL' with the URL you want to redirect the user to.
+            window.location.href = 'YOUR_ACTUAL_URL';
+        }
+
+        function goBack() {
+            // Go back to the previous page.
+            window.history.back();
+        }
+    </script>
+</body>
+</html>
