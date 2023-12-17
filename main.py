@@ -55,7 +55,7 @@ def prob(features):
     # predict
     probability = model.predict(features_array)[0][0]
 
-    print(model.predict(features_preproc))
+    print(model.predict(features_array))
     
     return probability
 
