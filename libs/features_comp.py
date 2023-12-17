@@ -117,49 +117,85 @@ def punycode(url):
     return any(ord(char) > 128 for char in url)
 
 def port(url):
-    return urlparse(url).port
+    try:
+        return urlparse(url).port
+    except:
+        return 0
 
 def tld_in_path(url):
-    path = urlparse(url).path
-    tld = urlparse(url).suffix
-    return tld in path
+    try:
+        path = urlparse(url).path
+        tld = urlparse(url).suffix
+        return tld in path
+    except:
+        return 0
 
 def tld_in_subdomain(url):
-    subdomain = urlparse(url).hostname.split('.')[0]
-    tld = urlparse(url).suffix
-    return tld in subdomain
+    try:
+        subdomain = urlparse(url).hostname.split('.')[0]
+        tld = urlparse(url).suffix
+        return tld in subdomain
+    except:
+        return 0
 
 def abnormal_subdomain(url):
-    subdomain = urlparse(url).hostname.split('.')[0]
-    return not subdomain.isalnum()
+    try:
+        subdomain = urlparse(url).hostname.split('.')[0]
+        return not subdomain.isalnum()
+    except:
+        return 0
 
 def nb_subdomains(url):
-    return len(urlparse(url).hostname.split('.'))
+    try:
+        return len(urlparse(url).hostname.split('.'))
+    except:
+        return 0
 
 def prefix_suffix(url):
-    return urlparse(url).hostname.startswith('www.') or urlparse(url).hostname.endswith('.com')
+    try:
+        return urlparse(url).hostname.startswith('www.') or urlparse(url).hostname.endswith('.com')
+    except:
+        return 0
 
 def random_domain(url):
-    return len(urlparse(url).hostname) > 10 and not urlparse(url).hostname.isalnum()
+    try:
+        return len(urlparse(url).hostname) > 10 and not urlparse(url).hostname.isalnum()
+    except:
+        return 0
 
 def shortening_service(url):
-    return any(service in url for service in ['bit.ly', 'tinyurl', 'goo.gl'])
+    try:
+        return any(service in url for service in ['bit.ly', 'tinyurl', 'goo.gl'])
+    except:
+        return 0
 
 def path_extension(url):
-    path = urlparse(url).path
-    return '.' in path
+    try:
+        path = urlparse(url).path
+        return '.' in path
+    except:
+        return 0
 
 def nb_redirection(url):
-    response = requests.head(url, allow_redirects=True)
-    return len(response.history)
+    try:
+        response = requests.head(url, allow_redirects=True)
+        return len(response.history)
+    except:
+        return 0
 
 def nb_external_redirection(url):
-    response = requests.head(url, allow_redirects=True)
-    return sum(urlparse(url).netloc not in urlparse(r.url).netloc for r in response.history)
+    try:
+        response = requests.head(url, allow_redirects=True)
+        return sum(urlparse(url).netloc not in urlparse(r.url).netloc for r in response.history)
+    except:
+        return 0
 
 def length_words_raw(url):
-    words = re.findall(r'\w+', url)
-    return len(words)
+    try:
+        words = re.findall(r'\w+', url)
+        return len(words)
+    except:
+        return 0
 
 def tld_in_path(url):
     try:
@@ -178,24 +214,42 @@ def tld_in_subdomain(url):
         return 0
 
 def abnormal_subdomain(url):
-    subdomain = urlparse(url).hostname.split('.')[0]
-    return not subdomain.isalnum()
+    try:
+        subdomain = urlparse(url).hostname.split('.')[0]
+        return not subdomain.isalnum()
+    except:
+        return 0
 
 def nb_subdomains(url):
-    return len(urlparse(url).hostname.split('.'))
+    try:
+        return len(urlparse(url).hostname.split('.'))
+    except:
+        return 0
 
 def prefix_suffix(url):
-    return urlparse(url).hostname.startswith('www.') or urlparse(url).hostname.endswith('.com')
+    try:
+        return urlparse(url).hostname.startswith('www.') or urlparse(url).hostname.endswith('.com')
+    except:
+        return 0
 
 def random_domain(url):
-    return len(urlparse(url).hostname) > 10 and not urlparse(url).hostname.isalnum()
+    try:
+        return len(urlparse(url).hostname) > 10 and not urlparse(url).hostname.isalnum()
+    except:
+        return 0
 
 def shortening_service(url):
-    return any(service in url for service in ['bit.ly', 'tinyurl', 'goo.gl'])
+    try:
+        return any(service in url for service in ['bit.ly', 'tinyurl', 'goo.gl'])
+    except:
+        return 0
 
 def path_extension(url):
-    path = urlparse(url).path
-    return '.' in path
+    try:
+        path = urlparse(url).path
+        return '.' in path
+    except:
+        return 0
 
 def nb_redirection(url):
     try:
@@ -214,58 +268,94 @@ def nb_external_redirection(url):
         return 0
 
 def length_words_raw(url):
-    words = re.findall(r'\w+', url)
-    return len(words)
+    try:
+        words = re.findall(r'\w+', url)
+        return len(words)
+    except:
+        return 0
 
 def char_repeat(url):
-    repeated_chars = re.findall(r'(\w)\1+', url)
-    return len(repeated_chars)
+    try:
+        repeated_chars = re.findall(r'(\w)\1+', url)
+        return len(repeated_chars)
+    except:
+        return 0
 
 def shortest_words_raw(url):
-    words = re.findall(r'\w+', url)
-    return min(len(word) for word in words) if words else 0
+    try:
+        words = re.findall(r'\w+', url)
+        return min(len(word) for word in words) if words else 0
+    except:
+        return 0
 
 def shortest_word_host(url):
-    hostname = urlparse(url).hostname
-    words = re.findall(r'\w+', hostname)
-    return min(len(word) for word in words) if words else 0
+    try:
+        hostname = urlparse(url).hostname
+        words = re.findall(r'\w+', hostname)
+        return min(len(word) for word in words) if words else 0
+    except:
+        return 0
 
 def shortest_word_path(url):
-    path = urlparse(url).path
-    words = re.findall(r'\w+', path)
-    return min(len(word) for word in words) if words else 0
+    try:
+        path = urlparse(url).path
+        words = re.findall(r'\w+', path)
+        return min(len(word) for word in words) if words else 0
+    except:
+        return 0
 
 def longest_words_raw(url):
-    words = re.findall(r'\w+', url)
-    return max(len(word) for word in words) if words else 0
+    try:
+        words = re.findall(r'\w+', url)
+        return max(len(word) for word in words) if words else 0
+    except:
+        return 0
 
 def longest_word_host(url):
-    hostname = urlparse(url).hostname
-    words = re.findall(r'\w+', hostname)
-    return max(len(word) for word in words) if words else 0
+    try:
+        hostname = urlparse(url).hostname
+        words = re.findall(r'\w+', hostname)
+        return max(len(word) for word in words) if words else 0
+    except:
+        return 0
 
 def longest_word_path(url):
-    path = urlparse(url).path
-    words = re.findall(r'\w+', path)
-    return max(len(word) for word in words) if words else 0
+    try:
+        path = urlparse(url).path
+        words = re.findall(r'\w+', path)
+        return max(len(word) for word in words) if words else 0
+    except:
+        return 0
 
 def avg_words_raw(url):
-    words = re.findall(r'\w+', url)
-    return sum(len(word) for word in words) / len(words) if words else 0
+    try:
+        words = re.findall(r'\w+', url)
+        return sum(len(word) for word in words) / len(words) if words else 0
+    except:
+        return 0
 
 def avg_word_host(url):
-    hostname = urlparse(url).hostname
-    words = re.findall(r'\w+', hostname)
-    return sum(len(word) for word in words) / len(words) if words else 0
+    try:
+        hostname = urlparse(url).hostname
+        words = re.findall(r'\w+', hostname)
+        return sum(len(word) for word in words) / len(words) if words else 0
+    except:
+        return 0
 
 def avg_word_path(url):
-    path = urlparse(url).path
-    words = re.findall(r'\w+', path)
-    return sum(len(word) for word in words) / len(words) if words else 0
+    try:
+        path = urlparse(url).path
+        words = re.findall(r'\w+', path)
+        return sum(len(word) for word in words) / len(words) if words else 0
+    except:
+        return 0
 
 def suspecious_tld(url):
-    ext = tldextract.extract(url)
-    return ext.suffix.lower() in ['tk', 'ml', 'ga', 'cf', 'gq']
+    try:
+        ext = tldextract.extract(url)
+        return ext.suffix.lower() in ['tk', 'ml', 'ga', 'cf', 'gq']
+    except:
+        return 0
 
 def nb_hyperlinks(url):
     try:
