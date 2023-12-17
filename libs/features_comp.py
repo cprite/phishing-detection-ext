@@ -162,14 +162,20 @@ def length_words_raw(url):
     return len(words)
 
 def tld_in_path(url):
-    path = urlparse(url).path
-    ext = tldextract.extract(url)
-    return ext.suffix in path
+    try:
+        path = urlparse(url).path
+        ext = tldextract.extract(url)
+        return ext.suffix in path
+    except:
+        return 0
 
 def tld_in_subdomain(url):
-    subdomain = urlparse(url).hostname.split('.')[0]
-    ext = tldextract.extract(url)
-    return ext.suffix in subdomain
+    try:
+        subdomain = urlparse(url).hostname.split('.')[0]
+        ext = tldextract.extract(url)
+        return ext.suffix in subdomain
+    except:
+        return 0
 
 def abnormal_subdomain(url):
     subdomain = urlparse(url).hostname.split('.')[0]
