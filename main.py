@@ -52,6 +52,9 @@ def prob(features):
 
 
 def get_class(prob):
+
+    print(prob)
+    
     if prob >= 0.5:
         return 'PHISHING'
     elif prob < 0.5:
