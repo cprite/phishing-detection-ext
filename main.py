@@ -31,6 +31,8 @@ def get_features(url, functions=functions):
 
         features.append(result)
 
+    print(features)
+
     return features
 
 
@@ -65,6 +67,8 @@ def get_class(prob):
 def check_url():
     data = request.json
     url = data['url']
+
+    print(url)
 
     # Process the URL
     features = get_features(url)
