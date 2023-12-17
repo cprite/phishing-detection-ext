@@ -42,14 +42,21 @@ def prob(features):
     features = list(map(float, features))
     features_array = np.array(features).reshape(1, -1)
 
+    print(features_array)
+
     scaler = StandardScaler()
     features_preproc = scaler.fit_transform(features_array)
+
+    print(features_preproc)
 
     # load pre-trained model
     model = load_model('saved_models/model_91.h5')
 
     # predict
     probability = model.predict(features_preproc)[0][0]
+
+    print(model.predict(features_preproc))
+    
     return probability
 
 
