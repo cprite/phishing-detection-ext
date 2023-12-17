@@ -105,10 +105,13 @@ def ratio_digits_url(url):
     return digits / total_chars if total_chars > 0 else 0
 
 def ratio_digits_host(url):
-    hostname = urlparse(url).hostname
-    total_chars = len(hostname)
-    digits = sum(c.isdigit() for c in hostname)
-    return digits / total_chars if total_chars > 0 else 0
+    try:
+        hostname = urlparse(url).hostname
+        total_chars = len(hostname)
+        digits = sum(c.isdigit() for c in hostname)
+        return digits / total_chars if total_chars > 0 else 0
+    except:
+        return 0
 
 def punycode(url):
     return any(ord(char) > 128 for char in url)
