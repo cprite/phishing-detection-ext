@@ -1,7 +1,7 @@
 from libs.features_comp import *
 from tensorflow.keras.models import load_model
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import MinMaxScaler
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -45,23 +45,13 @@ def prob(features):
 
     print(features_array)
 
-    # scaler = StandardScaler()
-    # features_preproc = scaler.fit_transform(features_array)
-
-    # print(features_preproc)
-
-    scaler = MinMaxScaler()
-
-    # Fit and transform the data
-    features_scaled = scaler.fit_transform(features_array)
-
     # load pre-trained model
     model = load_model('saved_models/model_91.h5')
 
     # predict
-    probability = model.predict(features_scaled)[0][0]
+    probability = model.predict(features_array)[0][0]
 
-    print(model.predict(features_scaled))
+    print(model.predict(features_array))
     
     return probability
 
