@@ -11,7 +11,10 @@ def length_url(url):
     return len(url)
 
 def length_hostname(url):
-    return len(urlparse(url).hostname)
+    try:
+        return len(urlparse(url).hostname)
+    except:
+        return 0
 
 def ip(url):
     try:
