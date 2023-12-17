@@ -52,9 +52,10 @@ def prob(features):
 
 
 def get_class(prob):
-    if prob > 0.5:
+    if prob >= 0.5:
         return 'PHISHING'
-    return 'LEGITIMATE'
+    elif prob < 0.5:
+        return 'LEGITIMATE'
 
 
 @app.route('/check_url', methods=['POST'])
