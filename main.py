@@ -44,16 +44,16 @@ def prob(features):
 
     print(features_array)
 
-    scaler = StandardScaler()
-    features_preproc = scaler.fit_transform(features_array)
+    # scaler = StandardScaler()
+    # features_preproc = scaler.fit_transform(features_array)
 
-    print(features_preproc)
+    # print(features_preproc)
 
     # load pre-trained model
     model = load_model('saved_models/model_91.h5')
 
     # predict
-    probability = model.predict(features_preproc)[0][0]
+    probability = model.predict(features_array)[0][0]
 
     print(model.predict(features_preproc))
     
