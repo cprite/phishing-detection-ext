@@ -67,20 +67,10 @@
         <img src="images/warning.png" alt="Warning Icon">
         <h1>Phishing Warning!</h1>
         <p>This website may be a phishing site. Proceed with caution.</p>
-        <button id="proceedBtn" onclick="proceedToURL()">Proceed to URL</button>
-        <button id="goBackBtn" onclick="goBack()">Go Back</button>
+        <button id="proceedBtn">Proceed to URL</button>
+        <button id="goBackBtn">Go Back</button>
     </div>
 
-    <script>
-        function proceedToURL() {
-            // Replace 'YOUR_ACTUAL_URL' with the URL you want to redirect the user to.
-            window.location.href = 'YOUR_ACTUAL_URL';
-        }
-
-        function goBack() {
-            // Go back to the previous page.
-            window.history.back();
-        }
-    </script>
+    <script src="warning.js"></script>
 </body>
 </html>
