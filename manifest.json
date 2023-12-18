@@ -3,14 +3,19 @@
   "name": "Phishing Detection Extension",
   "version": "1.0",
   "permissions": [
+    "tabs",
+    "webNavigation",
     "activeTab",
+    "storage",
     "nativeMessaging",
     "http://127.0.0.1:5000/"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js"],
+    "persistent": false
   },
   "browser_action": {
     "default_popup": "popup.html"
-  }
+  },
+  "content_security_policy": "script-src 'self'; object-src 'self'"
 }
