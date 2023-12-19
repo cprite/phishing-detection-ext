@@ -35,8 +35,8 @@
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
+        <li><a href="#disclaimer">[!] Disclaimer</a></li>
         <li><a href="#built-with">Built With</a></li>
-        <li><a href="#disclaimer">Disclaimer</a></li>
       </ul>
     </li>
     <li>
