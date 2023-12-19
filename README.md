@@ -160,6 +160,6 @@ Don't forget to give the project a star! Thanks again!
 [issues-shield]: https://img.shields.io/github/issues/cprite/phishing-detection-ext.svg?style=for-the-badge
 [issues-url]: https://github.com/cprite/phishing-detection-ext/issues
 [license-shield]: https://img.shields.io/github/license/cprite/phishing-detection-ext.svg?style=for-the-badge
-[license-url]: https://github.com/cprite/phishing-detection-ext/blob/master/LICENSE.txt
+[license-url]: https://github.com/cprite/phishing-detection-ext/blob/master/LICENSE.md
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/niknmirosh
