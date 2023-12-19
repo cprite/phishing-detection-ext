@@ -20,7 +20,6 @@
     <br />
     <br />
     <br />
-    ·
     <a href="https://github.com/cprite/phishing-detection-ext/issues">Report Bug</a>
     ·
     <a href="https://github.com/cprite/phishing-detection-ext/issues">Request Feature</a>
@@ -37,6 +36,7 @@
       <a href="#about-the-project">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
+        <li><a href="#disclaimer">Disclaimer</a></li>
       </ul>
     </li>
     <li>
@@ -56,10 +56,6 @@
 
 ### Disclaimer
 This extension is intended as a supplementary tool for online safety. While it demonstrates high accuracy, it is not infallible. As the developer, I am not a certified cybersecurity professional, and the extension could make errors. Users are advised to exercise caution and judgment. By using "No Phishing," you acknowledge and accept responsibility for your online safety.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
