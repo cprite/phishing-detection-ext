@@ -110,7 +110,6 @@ This section should list any major frameworks/libraries used to bootstrap your p
      ```sh
      cd path/to/repo/phishing-detection-ext
      python main.py
-     ```.
 5. Ready to Go!
    - You are now all set to surf the internet safely with the "No Phishing" extension.
    - The extension will run in the background, monitoring websites you visit for potential phishing threats.
@@ -123,15 +122,12 @@ This section should list any major frameworks/libraries used to bootstrap your p
 ## Roadmap
 
 - [x] **Create Demo Version**
-  - Status: ✅ Done
   - Description: Developed a demo version of the extension for initial testing and feedback.
 
 - [ ] **Deployment on Cloud**
-  - Status: 🔜 Upcoming
   - Description: Plan to deploy the backend services of the extension to a cloud platform for enhanced reliability and scalability.
 
 - [ ] **Deployment on Chrome Web Store**
-  - Status: 🔜 Upcoming
   - Description: Prepare and submit the extension to the Chrome Web Store for public availability and easy installation by users.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
