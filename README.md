@@ -59,7 +59,7 @@
 - **User-Friendly Interface**: Easy to install and operate, providing a seamless browsing experience.
 - **Real-Time Alerts**: Instant notifications about potential phishing threats.
 
-### Usage and Disclaimer
+### Disclaimer
 This extension is intended as a supplementary tool for online safety. While it demonstrates high accuracy, it is not infallible. As the developer, I am not a certified cybersecurity professional, and the extension could make errors. Users are advised to exercise caution and judgment. By using "No Phishing," you acknowledge and accept responsibility for your online safety.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
