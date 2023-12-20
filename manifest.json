@@ -12,11 +12,11 @@
     "http://127.0.0.1:5000/"
   ],
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["extension/background.js"],
     "persistent": false
   },
   "browser_action": {
-    "default_popup": "popup.html",
+    "default_popup": "extension/popup.html",
     "default_icon": "images/logo.png"
   },
   "content_security_policy": "script-src 'self'; object-src 'self'"
