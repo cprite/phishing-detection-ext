@@ -1,23 +1,23 @@
 {
   "manifest_version": 3,
   "name": "No Phishing",
-  "version": "1.0.1",
+  "version": "1.0",
   "description": "No Phishing provides robust, real-time protection against phishing threats, ensuring safe browsing and enhanced internet security.",
   "permissions": [
     "tabs",
     "webNavigation",
     "activeTab",
     "storage",
-    "nativeMessaging",
     "http://127.0.0.1:5000/"
   ],
   "background": {
-    "scripts": ["extension/background.js"],
-    "persistent": false
+    "service_worker": "extension/background.js"
   },
-  "browser_action": {
+  "action": {
     "default_popup": "extension/popup.html",
     "default_icon": "images/logo.png"
   },
-  "content_security_policy": "script-src 'self'; object-src 'self'"
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
 }
