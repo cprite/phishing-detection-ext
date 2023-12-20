@@ -15,6 +15,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  // Ignore about:blank pages
+  if (tab.url === 'about:blank') {
+    return;
+  }
+
   if (changeInfo.status === 'complete' && tab.url && !tab.url.startsWith('chrome://')) {
     chrome.storage.sync.get('isEnabled', function (data) {
       if (data.isEnabled) {
