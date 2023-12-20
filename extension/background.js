@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url && !tab.url.startsWith('chrome://')) {
-    if (!tab.url.startsWith(chrome.runtime.getURL("warning.html"))) {
+    if (!tab.url.startsWith(chrome.runtime.getURL("extension/warning.html"))) {
       if (proceedURLs.has(tab.url)) {
         // Remove the URL from the set after allowing it to proceed once
         proceedURLs.delete(tab.url);
@@ -30,7 +30,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         .then(response => response.json())
         .then(data => {
           if (data.decision === 'PHISHING') {
-            const warningPageUrl = chrome.runtime.getURL("warning.html") + "?url=" + encodeURIComponent(tab.url);
+            const warningPageUrl = chrome.runtime.getURL("extension/warning.html") + "?url=" + encodeURIComponent(tab.url);
             chrome.tabs.update(tabId, { url: warningPageUrl });
           }
         })
