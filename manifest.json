@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "No Phishing",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "No Phishing provides robust, real-time protection against phishing threats, ensuring safe browsing and enhanced internet security.",
   "permissions": [
     "tabs",
