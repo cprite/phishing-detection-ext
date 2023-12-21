@@ -111,6 +111,9 @@ This extension is intended as a supplementary tool for online safety. While it d
 
 - [x] **Create Demo Version**
   - Description: Developed a demo version of the extension for initial testing and feedback.
+     
+- [ ] **Self-Learning Capabilities**
+  - Description: Implementation of a self-learning mechanism to improve the accuracy of the prediction model based on user reports.
 
 - [ ] **Deployment on Cloud**
   - Description: Plan to deploy the backend services of the extension to a cloud platform for enhanced speed, reliability and scalability.
