@@ -8,7 +8,7 @@
     "webNavigation",
     "activeTab",
     "storage",
-    "http://127.0.0.1:5030"
+    "http://127.0.0.1:5000/"
   ],
   "background": {
     "service_worker": "extension/background.js"

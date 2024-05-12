@@ -11,19 +11,16 @@ def length_url(url):
     return len(url)
 
 def length_hostname(url):
-    try:
-        return len(urlparse(url).hostname)
-    except:
-        return 0
+    return len(urlparse(url).hostname)
 
 def ip(url):
     try:
         # Parse the URL to get the hostname
         hostname = urlparse(url).hostname
-
+        
         # Try to resolve the hostname to an IP address
         ip_address = socket.gethostbyname(hostname)
-
+        
         # Check if the resolved IP address is the same as the original hostname
         return ip_address == hostname
     except:
@@ -105,257 +102,150 @@ def ratio_digits_url(url):
     return digits / total_chars if total_chars > 0 else 0
 
 def ratio_digits_host(url):
-    try:
-        hostname = urlparse(url).hostname
-        total_chars = len(hostname)
-        digits = sum(c.isdigit() for c in hostname)
-        return digits / total_chars if total_chars > 0 else 0
-    except:
-        return 0
+    hostname = urlparse(url).hostname
+    total_chars = len(hostname)
+    digits = sum(c.isdigit() for c in hostname)
+    return digits / total_chars if total_chars > 0 else 0
 
 def punycode(url):
-    return any([ord(char) > 128 for char in url])
+    return any(ord(char) > 128 for char in url)
 
-def check_port(url):
-    try:
-        return urlparse(url).port
-    except:
-        return 0
+def port(url):
+    return urlparse(url).port
 
 def tld_in_path(url):
-    try:
-        path = urlparse(url).path
-        tld = urlparse(url).suffix
-        return tld in path
-    except:
-        return 0
+    path = urlparse(url).path
+    tld = urlparse(url).suffix
+    return tld in path
 
 def tld_in_subdomain(url):
-    try:
-        subdomain = urlparse(url).hostname.split('.')[0]
-        tld = urlparse(url).suffix
-        return tld in subdomain
-    except:
-        return 0
+    subdomain = urlparse(url).hostname.split('.')[0]
+    tld = urlparse(url).suffix
+    return tld in subdomain
 
 def abnormal_subdomain(url):
-    try:
-        subdomain = urlparse(url).hostname.split('.')[0]
-        return not subdomain.isalnum()
-    except:
-        return 0
+    subdomain = urlparse(url).hostname.split('.')[0]
+    return not subdomain.isalnum()
 
 def nb_subdomains(url):
-    try:
-        return len(urlparse(url).hostname.split('.'))
-    except:
-        return 0
+    return len(urlparse(url).hostname.split('.'))
 
 def prefix_suffix(url):
-    try:
-        return urlparse(url).hostname.startswith('www.') or urlparse(url).hostname.endswith('.com')
-    except:
-        return 0
+    return urlparse(url).hostname.startswith('www.') or urlparse(url).hostname.endswith('.com')
 
 def random_domain(url):
-    try:
-        return len(urlparse(url).hostname) > 10 and not urlparse(url).hostname.isalnum()
-    except:
-        return 0
+    return len(urlparse(url).hostname) > 10 and not urlparse(url).hostname.isalnum()
 
 def shortening_service(url):
-    try:
-        return any(service in url for service in ['bit.ly', 'tinyurl', 'goo.gl'])
-    except:
-        return 0
+    return any(service in url for service in ['bit.ly', 'tinyurl', 'goo.gl'])
 
 def path_extension(url):
-    try:
-        path = urlparse(url).path
-        return '.' in path
-    except:
-        return 0
+    path = urlparse(url).path
+    return '.' in path
 
 def nb_redirection(url):
-    try:
-        response = requests.head(url, allow_redirects=True)
-        return len(response.history)
-    except:
-        return 0
+    response = requests.head(url, allow_redirects=True)
+    return len(response.history)
 
 def nb_external_redirection(url):
-    try:
-        response = requests.head(url, allow_redirects=True)
-        return sum(urlparse(url).netloc not in urlparse(r.url).netloc for r in response.history)
-    except:
-        return 0
+    response = requests.head(url, allow_redirects=True)
+    return sum(urlparse(url).netloc not in urlparse(r.url).netloc for r in response.history)
 
 def length_words_raw(url):
-    try:
-        words = re.findall(r'\w+', url)
-        return len(words)
-    except:
-        return 0
+    words = re.findall(r'\w+', url)
+    return len(words)
 
 def tld_in_path(url):
-    try:
-        path = urlparse(url).path
-        ext = tldextract.extract(url)
-        return ext.suffix in path
-    except:
-        return 0
+    path = urlparse(url).path
+    ext = tldextract.extract(url)
+    return ext.suffix in path
 
 def tld_in_subdomain(url):
-    try:
-        subdomain = urlparse(url).hostname.split('.')[0]
-        ext = tldextract.extract(url)
-        return ext.suffix in subdomain
-    except:
-        return 0
+    subdomain = urlparse(url).hostname.split('.')[0]
+    ext = tldextract.extract(url)
+    return ext.suffix in subdomain
 
 def abnormal_subdomain(url):
-    try:
-        subdomain = urlparse(url).hostname.split('.')[0]
-        return not subdomain.isalnum()
-    except:
-        return 0
+    subdomain = urlparse(url).hostname.split('.')[0]
+    return not subdomain.isalnum()
 
 def nb_subdomains(url):
-    try:
-        return len(urlparse(url).hostname.split('.'))
-    except:
-        return 0
+    return len(urlparse(url).hostname.split('.'))
 
 def prefix_suffix(url):
-    try:
-        return urlparse(url).hostname.startswith('www.') or urlparse(url).hostname.endswith('.com')
-    except:
-        return 0
+    return urlparse(url).hostname.startswith('www.') or urlparse(url).hostname.endswith('.com')
 
 def random_domain(url):
-    try:
-        return len(urlparse(url).hostname) > 10 and not urlparse(url).hostname.isalnum()
-    except:
-        return 0
+    return len(urlparse(url).hostname) > 10 and not urlparse(url).hostname.isalnum()
 
 def shortening_service(url):
-    try:
-        return any(service in url for service in ['bit.ly', 'tinyurl', 'goo.gl'])
-    except:
-        return 0
+    return any(service in url for service in ['bit.ly', 'tinyurl', 'goo.gl'])
 
 def path_extension(url):
-    try:
-        path = urlparse(url).path
-        return '.' in path
-    except:
-        return 0
+    path = urlparse(url).path
+    return '.' in path
 
 def nb_redirection(url):
-    try:
-        response = requests.head(url, allow_redirects=True)
-        return len(response.history)
-    except Exception as e:
-        print(f"Error counting redirections: {e}")
-        return 0
+    response = requests.head(url, allow_redirects=True)
+    return len(response.history)
 
 def nb_external_redirection(url):
-    try:
-        response = requests.head(url, allow_redirects=True)
-        return sum(urlparse(url).netloc not in urlparse(r.url).netloc for r in response.history)
-    except Exception as e:
-        print(f"Error counting external redirections: {e}")
-        return 0
+    response = requests.head(url, allow_redirects=True)
+    return sum(urlparse(url).netloc not in urlparse(r.url).netloc for r in response.history)
 
 def length_words_raw(url):
-    try:
-        words = re.findall(r'\w+', url)
-        return len(words)
-    except:
-        return 0
+    words = re.findall(r'\w+', url)
+    return len(words)
 
 def char_repeat(url):
-    try:
-        repeated_chars = re.findall(r'(\w)\1+', url)
-        return len(repeated_chars)
-    except:
-        return 0
+    repeated_chars = re.findall(r'(\w)\1+', url)
+    return len(repeated_chars)
 
 def shortest_words_raw(url):
-    try:
-        words = re.findall(r'\w+', url)
-        return min(len(word) for word in words) if words else 0
-    except:
-        return 0
+    words = re.findall(r'\w+', url)
+    return min(len(word) for word in words) if words else 0
 
 def shortest_word_host(url):
-    try:
-        hostname = urlparse(url).hostname
-        words = re.findall(r'\w+', hostname)
-        return min(len(word) for word in words) if words else 0
-    except:
-        return 0
+    hostname = urlparse(url).hostname
+    words = re.findall(r'\w+', hostname)
+    return min(len(word) for word in words) if words else 0
 
 def shortest_word_path(url):
-    try:
-        path = urlparse(url).path
-        words = re.findall(r'\w+', path)
-        return min(len(word) for word in words) if words else 0
-    except:
-        return 0
+    path = urlparse(url).path
+    words = re.findall(r'\w+', path)
+    return min(len(word) for word in words) if words else 0
 
 def longest_words_raw(url):
-    try:
-        words = re.findall(r'\w+', url)
-        return max(len(word) for word in words) if words else 0
-    except:
-        return 0
+    words = re.findall(r'\w+', url)
+    return max(len(word) for word in words) if words else 0
 
 def longest_word_host(url):
-    try:
-        hostname = urlparse(url).hostname
-        words = re.findall(r'\w+', hostname)
-        return max(len(word) for word in words) if words else 0
-    except:
-        return 0
+    hostname = urlparse(url).hostname
+    words = re.findall(r'\w+', hostname)
+    return max(len(word) for word in words) if words else 0
 
 def longest_word_path(url):
-    try:
-        path = urlparse(url).path
-        words = re.findall(r'\w+', path)
-        return max(len(word) for word in words) if words else 0
-    except:
-        return 0
+    path = urlparse(url).path
+    words = re.findall(r'\w+', path)
+    return max(len(word) for word in words) if words else 0
 
 def avg_words_raw(url):
-    try:
-        words = re.findall(r'\w+', url)
-        return sum(len(word) for word in words) / len(words) if words else 0
-    except:
-        return 0
+    words = re.findall(r'\w+', url)
+    return sum(len(word) for word in words) / len(words) if words else 0
 
 def avg_word_host(url):
-    try:
-        hostname = urlparse(url).hostname
-        words = re.findall(r'\w+', hostname)
-        return sum(len(word) for word in words) / len(words) if words else 0
-    except:
-        return 0
+    hostname = urlparse(url).hostname
+    words = re.findall(r'\w+', hostname)
+    return sum(len(word) for word in words) / len(words) if words else 0
 
 def avg_word_path(url):
-    try:
-        path = urlparse(url).path
-        words = re.findall(r'\w+', path)
-        return sum(len(word) for word in words) / len(words) if words else 0
-    except:
-        return 0
+    path = urlparse(url).path
+    words = re.findall(r'\w+', path)
+    return sum(len(word) for word in words) / len(words) if words else 0
 
 def suspecious_tld(url):
-    try:
-        ext = tldextract.extract(url)
-        return ext.suffix.lower() in ['tk', 'ml', 'ga', 'cf', 'gq']
-    except:
-        return 0
+    ext = tldextract.extract(url)
+    return ext.suffix.lower() in ['tk', 'ml', 'ga', 'cf', 'gq']
 
 def nb_hyperlinks(url):
     try:
@@ -406,40 +296,24 @@ def nb_extCSS(url):
         return 0
 
 def ratio_intRedirection(url):
-    try:
-        response = requests.head(url, allow_redirects=True)
-        int_redirections = sum(urlparse(r.url).netloc == urlparse(url).netloc for r in response.history)
-        return int_redirections / len(response.history) if len(response.history) > 0 else 0
-    except Exception as e:
-        print(f"Error fetching redirections: {e}")
-        return 0
+    response = requests.head(url, allow_redirects=True)
+    int_redirections = sum(urlparse(r.url).netloc == urlparse(url).netloc for r in response.history)
+    return int_redirections / len(response.history) if len(response.history) > 0 else 0
 
 def ratio_extRedirection(url):
-    try:
-        response = requests.head(url, allow_redirects=True)
-        ext_redirections = sum(urlparse(r.url).netloc != urlparse(url).netloc for r in response.history)
-        return ext_redirections / len(response.history) if len(response.history) > 0 else 0
-    except Exception as e:
-        print(f"Error fetching external redirections: {e}")
-        return 0
+    response = requests.head(url, allow_redirects=True)
+    ext_redirections = sum(urlparse(r.url).netloc != urlparse(url).netloc for r in response.history)
+    return ext_redirections / len(response.history) if len(response.history) > 0 else 0
 
 def ratio_intErrors(url):
-    try:
-        response = requests.head(url, allow_redirects=True)
-        int_errors = sum(r.status_code >= 400 and r.status_code < 500 for r in response.history)
-        return int_errors / len(response.history) if len(response.history) > 0 else 0
-    except Exception as e:
-        print(f"Error fetching errors: {e}")
-        return 0
+    response = requests.head(url, allow_redirects=True)
+    int_errors = sum(r.status_code >= 400 and r.status_code < 500 for r in response.history)
+    return int_errors / len(response.history) if len(response.history) > 0 else 0
 
 def ratio_extErrors(url):
-    try:
-        response = requests.head(url, allow_redirects=True)
-        ext_errors = sum(r.status_code >= 400 and r.status_code < 500 for r in response.history)
-        return ext_errors / len(response.history) if len(response.history) > 0 else 0
-    except Exception as e:
-        print(f"Error fetching external errors: {e}")
-        return 0
+    response = requests.head(url, allow_redirects=True)
+    ext_errors = sum(r.status_code >= 400 and r.status_code < 500 for r in response.history)
+    return ext_errors / len(response.history) if len(response.history) > 0 else 0
 
 def login_form(url):
     try:
@@ -449,7 +323,7 @@ def login_form(url):
     except Exception as e:
         print(f"Error fetching login form: {e}")
         return 0
-
+    
 def external_favicon(url):
     try:
         response = requests.get(url)
@@ -459,7 +333,7 @@ def external_favicon(url):
     except Exception as e:
         print(f"Error fetching external favicon information: {e}")
         return 0
-
+    
 def links_in_tags(url):
     try:
         response = requests.get(url)
@@ -468,7 +342,7 @@ def links_in_tags(url):
     except Exception as e:
         print(f"Error fetching hyperlinks: {e}")
         return 0
-
+    
 def submit_email(url):
     try:
         response = requests.get(url)
@@ -477,7 +351,7 @@ def submit_email(url):
     except Exception as e:
         print(f"Error fetching email submission form: {e}")
         return 0
-
+    
 def ratio_intMedia(url):
     try:
         response = requests.get(url)
@@ -497,7 +371,7 @@ def ratio_intMedia(url):
     except Exception as e:
         print(f"Error calculating ratio of internal media: {e}")
         return 0
-
+    
 def ratio_extMedia(url):
     try:
         response = requests.get(url)
