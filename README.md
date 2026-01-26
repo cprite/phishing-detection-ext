@@ -104,22 +104,6 @@ This extension is intended as a supplementary tool for online safety. While it d
    - Stay safe and feel free to report any suspicious sites or activities you encounter.
    - Remember, your web safety is enhanced, but always stay vigilant while browsing.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ROADMAP -->
-## Roadmap
-
-- [x] **Create Demo Version**
-  - Description: Developed a demo version of the extension for initial testing and feedback.
-     
-- [ ] **Self-Learning Capabilities**
-  - Description: Implementation of a self-learning mechanism to improve the accuracy of the prediction model based on user reports.
-
-- [ ] **Deployment on Cloud**
-  - Description: Plan to deploy the backend services of the extension to a cloud platform for enhanced speed, reliability and scalability.
-
-- [ ] **Deployment on Chrome Web Store**
-  - Description: Prepare and submit the extension to the Chrome Web Store for public availability and easy installation by users.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
