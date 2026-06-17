@@ -1,1 +1,6 @@
 raw_data/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
