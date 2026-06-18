@@ -12,16 +12,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function proceedToURL() {
     const actualURL = getQueryParam('url');
-    if (actualURL) {
-      // Inform the background script to skip the next check for this URL
-      chrome.runtime.sendMessage({ action: "proceedToURL", url: actualURL });
-
-      // Redirect the user to the actual URL
-      window.location.href = actualURL;
-    } else {
+    if (!actualURL) {
       console.error('URL parameter is missing');
-      // Handle the case where the URL parameter is missing
+      return;
     }
+    // Trust this domain so future visits aren't re-checked, then navigate.
+    // Navigation waits for the ack so the next page load sees the updated list.
+    chrome.runtime.sendMessage({ action: "trustDomain", url: actualURL }, function () {
+      window.location.href = actualURL;
+    });
   }
 
   function goBack() {

@@ -25,8 +25,13 @@ extension shows a warning page.
 - It does **not** collect, store, or share any personal information.
 - It does **not** use cookies or track you across sites.
 
-The only thing stored is a single on/off setting (`isEnabled`), kept in
-Chrome's local extension storage on your device.
+The only things stored are kept in Chrome's local extension storage on your
+device:
+
+- a single on/off setting (`isEnabled`), and
+- a list of sites you have chosen to trust (`trusted_domains`) — the hostnames
+  you approved via the "Proceed" button on a warning page, so they are not
+  flagged again. You can remove any of them from the extension popup at any time.
 
 ## Permissions
 

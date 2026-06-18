@@ -60,10 +60,14 @@
     <li>It does <strong>not</strong> collect, store, or share any personal information.</li>
     <li>It does <strong>not</strong> use cookies or track you across sites.</li>
   </ul>
-  <p>
-    The only thing stored is a single on/off setting (<code>isEnabled</code>), kept in
-    Chrome's local extension storage on your device.
-  </p>
+  <p>The only things stored are kept in Chrome's local extension storage on your device:</p>
+  <ul>
+    <li>a single on/off setting (<code>isEnabled</code>), and</li>
+    <li>a list of sites you have chosen to trust (<code>trusted_domains</code>) — the
+      hostnames you approved via the "Proceed" button on a warning page, so they
+      are not flagged again. You can remove any of them from the extension popup
+      at any time.</li>
+  </ul>
 
   <h2>Permissions</h2>
   <ul>

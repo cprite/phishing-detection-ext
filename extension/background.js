@@ -4,6 +4,10 @@
  * Pages are reported by content.js, scored locally by the ONNX model running in
  * an offscreen document, and redirected to the warning page when flagged. There
  * is no companion server: the old http://127.0.0.1:5030 dependency is gone.
+ *
+ * Trusted domains: when the user clicks "Proceed" on the warning page, that
+ * page's hostname is saved to chrome.storage.local (trusted_domains). Future
+ * visits to any URL on that hostname skip the model entirely.
  */
 importScripts("features.js"); // provides self.NoPhishingFeatures
 
@@ -38,22 +42,47 @@ async function classify(features) {
   return chrome.runtime.sendMessage({ target: "offscreen", action: "classify", features });
 }
 
-// URLs the user chose to proceed to from the warning page (skip one check).
-const proceedURLs = new Set();
+// --- Trusted domains (user-approved via the warning page) ------------------
+
+function hostnameOf(url) {
+  try {
+    return new URL(url).hostname;
+  } catch (e) {
+    return "";
+  }
+}
+
+async function getTrustedDomains() {
+  const { trusted_domains } = await chrome.storage.local.get("trusted_domains");
+  return Array.isArray(trusted_domains) ? trusted_domains : [];
+}
+
+// Add a URL's hostname to the trusted list (no-op if already present).
+async function trustDomain(url) {
+  const host = hostnameOf(url);
+  if (!host) return;
+  const domains = await getTrustedDomains();
+  if (!domains.includes(host)) {
+    domains.push(host);
+    await chrome.storage.local.set({ trusted_domains: domains });
+  }
+}
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.set({ isEnabled: false });
 });
 
-chrome.runtime.onMessage.addListener((msg, sender) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.target === "offscreen") return; // handled by the offscreen document
   if (msg.action === "updateState") {
     chrome.storage.sync.set({ isEnabled: msg.state });
     return;
   }
-  if (msg.action === "proceedToURL") {
-    proceedURLs.add(msg.url);
-    return;
+  if (msg.action === "trustDomain") {
+    // Persist the domain, then ack so the warning page navigates only after the
+    // write lands (the next page load must see the updated trusted list).
+    trustDomain(msg.url).then(() => sendResponse({ ok: true }));
+    return true; // keep the channel open for the async response
   }
   if (msg.type === "NP_PAGE" && sender.tab) {
     handlePage(msg, sender.tab.id);
@@ -68,10 +97,11 @@ async function handlePage(msg, tabId) {
   if (!url || url.startsWith("chrome") || url.startsWith(chrome.runtime.getURL(""))) {
     return; // skip chrome:// and our own pages (incl. the warning page)
   }
-  if (proceedURLs.has(url)) {
-    proceedURLs.delete(url);
-    return;
-  }
+
+  // Skip any page on a hostname the user has explicitly trusted.
+  const host = hostnameOf(url);
+  const trusted = await getTrustedDomains();
+  if (host && trusted.includes(host)) return;
 
   try {
     const features = NoPhishingFeatures.extractFeatures(url, msg.nbHyperlinks);

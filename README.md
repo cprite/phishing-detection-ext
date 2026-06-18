@@ -129,6 +129,8 @@ Everything runs locally in your browser. No server, no network calls, no data le
 
 **Offscreen document** (`extension/offscreen.html` / `offscreen.js`) — hosts [onnxruntime-web](https://onnxruntime.ai/docs/get-started/with-javascript/web.html) (WebAssembly, bundled in `extension/vendor/`). Loads `saved_models/model.onnx` once, then scores each feature vector. Returns `PHISHING` or `OK`. If phishing, the service worker redirects the tab to the built-in warning page.
 
+**Trusted sites** — clicking **Proceed** on a warning adds that page's hostname to a local trusted list (`chrome.storage.local`). Pages on a trusted hostname skip the model on future visits. Manage (and remove) trusted sites from the extension popup. The list never leaves your device.
+
 **The 11 features** — 10 lexical features derived from the URL string (length, character counts, digit ratio, suspicious-token hits) plus the page hyperlink count. WHOIS lookups, redirect-history probes, and word-length features that require a public-suffix-aware tokenizer are all omitted — they either cannot be computed client-side or cannot be reproduced in JS with exact parity to the training data. The remaining accuracy trade-off vs the old 22-feature server model is under 1 point.
 
 **Model** — `saved_models/model.onnx` is a MinMaxScaler + Gradient Boosting classifier (n_estimators=300, max_depth=4) exported via [skl2onnx](https://onnx.ai/sklearn-onnx/), 332 KB. Trained on the [Hannousse & Yahiouche phishing dataset](https://www.kaggle.com/datasets/shashwatwork/web-page-phishing-detection-dataset/data) (≈9 600 samples after cleaning). Feature formulas are verified to produce 800/800 exact-match parity with the training dataset columns.

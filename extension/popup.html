@@ -9,6 +9,7 @@
       font-family: Arial, sans-serif;
       margin: 10px;
       text-align: center;
+      width: 260px;
     }
 
     .switch {
@@ -70,6 +71,70 @@
       color: #0000EE;
       text-decoration: none;
     }
+
+    .trusted {
+      margin-top: 18px;
+      text-align: left;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 12px;
+    }
+
+    .trusted h2 {
+      font-size: 0.85em;
+      color: #444;
+      margin: 0 0 8px;
+      text-align: center;
+    }
+
+    #trustedEmpty {
+      font-size: 0.78em;
+      color: #999;
+      text-align: center;
+      margin: 4px 0;
+    }
+
+    #trustedList {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    #trustedList li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82em;
+      padding: 4px 6px;
+      border-radius: 4px;
+    }
+
+    #trustedList li:nth-child(odd) {
+      background-color: #f5f5f5;
+    }
+
+    #trustedList .host {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 8px;
+    }
+
+    #trustedList .remove {
+      flex: none;
+      border: none;
+      background: none;
+      color: #e74c3c;
+      cursor: pointer;
+      font-size: 1em;
+      line-height: 1;
+      padding: 2px 4px;
+    }
+
+    #trustedList .remove:hover {
+      color: #c0392b;
+    }
   </style>
 </head>
 <body>
@@ -77,6 +142,12 @@
     <input type="checkbox" id="toggleSwitch">
     <span class="slider"></span>
   </label>
+
+  <div class="trusted">
+    <h2>Trusted sites</h2>
+    <p id="trustedEmpty">No trusted sites yet.</p>
+    <ul id="trustedList"></ul>
+  </div>
 
   <div class="footer">
     <p>Disclaimer: This extension is for educational purposes only.</p>
