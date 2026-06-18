@@ -83,6 +83,39 @@ async function markActiveTabPhishing() {
   return { ok: true };
 }
 
+// --- Model stats (self-learning transparency) ------------------------------
+
+// Summarise the in-browser model so the popup can show that it is improving:
+// how many feedback points exist, when the last one was added, and a leave-one-
+// out accuracy over the feedback points (each predicted against seed + the
+// *other* feedback, so a point never votes for itself — an honest estimate of
+// how well the current model classifies the user's own corrections).
+async function computeStats() {
+  const fb = await NoPhishingStore.getFeedbackPoints();
+  const ds = await NoPhishingStore.buildDataset();
+  const seedLen = ds.X.length - fb.length; // feedback occupies the tail of ds
+
+  let lastUpdated = null;
+  for (const p of fb) {
+    if (p.ts && (lastUpdated === null || p.ts > lastUpdated)) lastUpdated = p.ts;
+  }
+
+  let correct = 0;
+  for (let i = 0; i < fb.length; i++) {
+    const gi = seedLen + i; // this point's index in the merged dataset
+    const X = ds.X.slice(0, gi).concat(ds.X.slice(gi + 1));
+    const y = ds.y.slice(0, gi).concat(ds.y.slice(gi + 1));
+    const { label } = NoPhishingKNN.predict(ds.X[gi], X, y, ds.k);
+    if (label === fb[i].y) correct++;
+  }
+
+  return {
+    feedbackCount: fb.length,
+    lastUpdated: lastUpdated, // ISO string or null
+    accuracy: fb.length ? correct / fb.length : null, // 0..1 or null
+  };
+}
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.set({ isEnabled: false });
 });
@@ -102,6 +135,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.action === "markPhishing") {
     markActiveTabPhishing().then(sendResponse);
+    return true;
+  }
+  if (msg.action === "getStats") {
+    computeStats().then(sendResponse);
     return true;
   }
   if (msg.type === "NP_PAGE" && sender.tab) {

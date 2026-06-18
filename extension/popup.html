@@ -176,6 +176,31 @@
       min-height: 1em;
       margin: 6px 0 0;
     }
+
+    .stats {
+      margin-top: 12px;
+      text-align: left;
+      font-size: 0.8em;
+      color: #444;
+    }
+
+    .stats h3 {
+      font-size: 0.85em;
+      color: #444;
+      margin: 0 0 6px;
+      text-align: center;
+    }
+
+    .stats .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 2px 0;
+    }
+
+    .stats .row b {
+      font-weight: 600;
+      color: #222;
+    }
   </style>
 </head>
 <body>
@@ -194,6 +219,13 @@
     <h2>Self-learning (open-source build)</h2>
     <button id="markPhishingBtn" class="oss-btn">Mark this site as phishing</button>
     <p id="feedbackStatus"></p>
+
+    <div class="stats" id="statsBlock">
+      <h3>Model stats</h3>
+      <div class="row"><span>Last updated:</span> <b id="statUpdated">—</b></div>
+      <div class="row"><span>Feedback points:</span> <b id="statCount">0</b></div>
+      <div class="row"><span>Accuracy (on feedback):</span> <b id="statAcc">—</b></div>
+    </div>
   </div>
 
   <div class="footer">

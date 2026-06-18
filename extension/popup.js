@@ -63,6 +63,19 @@ document.addEventListener('DOMContentLoaded', function() {
       if (text) setTimeout(function() { status.textContent = ''; }, 4000);
     }
 
+    // Model stats: show the user that the in-browser model is improving.
+    function renderStats() {
+      chrome.runtime.sendMessage({ action: 'getStats' }, function(s) {
+        if (!s) return;
+        document.getElementById('statUpdated').textContent =
+          s.lastUpdated ? new Date(s.lastUpdated).toLocaleString() : '—';
+        document.getElementById('statCount').textContent = s.feedbackCount;
+        document.getElementById('statAcc').textContent =
+          s.accuracy === null ? '—' : Math.round(s.accuracy * 100) + '%';
+      });
+    }
+    renderStats();
+
     // Mark the active tab as phishing (a missed detection). The service worker
     // scores the live page and adds a phishing point to the KNN dataset.
     markBtn.addEventListener('click', function() {
@@ -70,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
       chrome.runtime.sendMessage({ action: 'markPhishing' }, function(resp) {
         markBtn.disabled = false;
         setStatus(resp && resp.ok ? 'Marked as phishing. Thanks!' : 'Cannot mark this page.');
+        if (resp && resp.ok) renderStats(); // refresh after a new point
       });
     });
   }
