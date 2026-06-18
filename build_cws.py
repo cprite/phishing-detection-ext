@@ -2,13 +2,14 @@
 build_cws.py — produce the Chrome Web Store build from this open-source repo.
 
 The repository itself is the OPEN-SOURCE build (config.js sets IS_OSS_BUILD=true):
-it ships the self-learning feedback loop (feedback collection, the popup's
-"Mark as phishing" / "Export feedback" buttons, and retrain_from_feedback.py).
+it ships the in-browser self-learning loop (the popup's "Mark as phishing" button
+and "Proceed" both add KNN feedback points).
 
-This script emits the STORE build, which strips all of that:
+This script emits the STORE build, which strips that:
   * copies only the files the extension loads,
-  * rewrites extension/config.js so IS_OSS_BUILD=false (hides every feedback
-    feature; the store build never collects feedback),
+  * rewrites extension/config.js so IS_OSS_BUILD=false (hides the feedback
+    button; "Proceed" no longer adds points; the store build never collects
+    feedback),
   * excludes the Python/training files, the dataset and the docs site,
   * zips the result for upload.
 
@@ -76,8 +77,8 @@ def main():
 
     print(f"Store build written to {OUT}")
     print(f"Upload package:        {ZIP}")
-    print("IS_OSS_BUILD=false — feedback collection, popup feedback buttons and "
-          "the retrain script are all absent from this build.")
+    print("IS_OSS_BUILD=false — the feedback button is hidden and no feedback "
+          "points are collected in this build.")
 
 
 if __name__ == "__main__":

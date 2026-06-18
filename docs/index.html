@@ -48,7 +48,7 @@
   <p>
     From these it computes a small set of numeric features and runs them through a
     machine-learning model that is <strong>bundled inside the extension</strong> and executed
-    locally in your browser (via WebAssembly). The model returns a single
+    locally in your browser (in JavaScript). The model returns a single
     "phishing" / "legitimate" decision. If a page is judged to be phishing, the
     extension shows a warning page.
   </p>
@@ -71,8 +71,8 @@
 
   <h2>Permissions</h2>
   <ul>
-    <li><strong>storage</strong> — remembers whether protection is turned on.</li>
-    <li><strong>offscreen</strong> — runs the local ML model (WebAssembly) in a background document.</li>
+    <li><strong>storage</strong> — remembers whether protection is turned on and your trusted sites.</li>
+    <li><strong>tabs</strong> — lets the extension redirect a tab to the warning page when a phishing site is detected.</li>
     <li><strong>Access to web pages</strong> (content script on <code>http</code>/<code>https</code>) — needed to read the current page's URL and link count in order to score it locally.</li>
   </ul>
 

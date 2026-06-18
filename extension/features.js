@@ -1,16 +1,16 @@
 /*
  * features.js — runtime feature extraction for the No Phishing extension (browser build).
  *
- * Produces the 11-feature vector the bundled ONNX model expects, in the exact
- * order of saved_models/browser_features.json:
+ * Produces the 11-feature vector the in-browser KNN classifier expects, in the
+ * exact order of saved_models/seed_model.json (feature_names):
  *
  *   10 lexical features  — computed here from the URL string alone.
  *    1 content feature   — nb_hyperlinks — passed in by the caller (counted from
  *                          the live page DOM: document.querySelectorAll('a').length).
  *
- * Train/inference parity is guaranteed by construction: the model is retrained on
- * exactly these formulas, and tests verify each one reproduces the training
- * dataset's column values byte-for-byte on an 800-row sample (npm test / Node).
+ * Train/inference parity is guaranteed by construction: the seed model is built
+ * from exactly these formulas, and tests verify each one reproduces the training
+ * dataset's column values byte-for-byte on an 800-row sample (Node).
  *
  * Features deliberately NOT computed here, and why:
  *   - domain_age, domain_registration_length (WHOIS) and ratio_extRedirection,
@@ -20,7 +20,7 @@
  *   - shortest_word_host, shortest_word_path, longest_word_path: the dataset
  *     tokenizes words with a public-suffix list (tldextract) + underscore
  *     splitting that JS cannot cheaply match; a naive split feeds the model
- *     wrong values. Dropping all three costs ~0.4pt accuracy — see train_browser.py.
+ *     wrong values. Dropping all three costs ~0.4pt accuracy — see export_model.py.
  *
  * Works both as a service-worker global (importScripts) and as a Node module
  * (module.exports) so it can be unit-tested against the Python golden vectors.
@@ -35,7 +35,7 @@
     "view",
   ];
 
-  // Ordered list of every feature the model consumes (must match browser_features.json).
+  // Ordered list of every feature the model consumes (must match seed_model.json feature_names).
   var FEATURE_ORDER = [
     "length_url", "length_hostname", "nb_dots", "nb_hyphens", "nb_qm", "nb_eq",
     "nb_slash", "nb_www", "ratio_digits_url", "phish_hints", "nb_hyperlinks",

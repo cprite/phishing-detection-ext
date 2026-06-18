@@ -1,13 +1,12 @@
 {
   "manifest_version": 3,
   "name": "No Phishing",
-  "version": "2.0",
+  "version": "3.0",
   "description": "Real-time, on-device phishing detection. Pages are scored by a local ML model — no data ever leaves your browser.",
   "homepage_url": "https://cprite.github.io/phishing-detection-ext/",
   "permissions": [
     "tabs",
-    "storage",
-    "offscreen"
+    "storage"
   ],
   "background": {
     "service_worker": "extension/background.js"
@@ -33,6 +32,6 @@
     "128": "images/icon128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }

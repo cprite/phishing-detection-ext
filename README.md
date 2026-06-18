@@ -56,7 +56,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-**No Phishing** is a self-contained Chrome extension that detects phishing URLs in real time. The ML model runs **entirely inside your browser** using WebAssembly — no companion server, no data sent anywhere. It achieves **92.0% test accuracy** using a Gradient Boosting classifier trained on 11 browser-computable features.
+**No Phishing** is a self-contained Chrome extension that detects phishing URLs in real time. The classifier is a **K-Nearest-Neighbours model implemented in pure JavaScript** — no companion server, no ONNX, no WebAssembly, no data sent anywhere. It achieves **89.4% test accuracy** on 11 browser-computable features, and because KNN is instance-based it **learns in the browser**: your corrections become new data points that immediately affect future predictions.
 
 ### Disclaimer
 This extension is intended as a supplementary tool for online safety. While it demonstrates high accuracy, it is not infallible. As the developer, I am not a certified cybersecurity professional, and the extension could make errors. Users are advised to exercise caution and judgment. By using "No Phishing," you acknowledge and accept responsibility for your online safety.
@@ -70,7 +70,6 @@ This extension is intended as a supplementary tool for online safety. While it d
 * [![Pandas](https://img.shields.io/badge/Pandas-2C2D72?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 * [![NumPy](https://img.shields.io/badge/Numpy-777BB4?style=for-the-badge&logo=numpy&logoColor=white)](https://numpy.org/)
 * [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
-* [![ONNX](https://img.shields.io/badge/ONNX-005CED?style=for-the-badge&logo=onnx&logoColor=white)](https://onnxruntime.ai/)
 * [![Google Chrome](https://img.shields.io/badge/Google_chrome-4285F4?style=for-the-badge&logo=Google-chrome&logoColor=white)](https://www.google.com/chrome/)
 * [![VScode](https://img.shields.io/badge/VSCode-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white)](https://code.visualstudio.com/)
 
@@ -97,22 +96,22 @@ No Python, no server, no setup. Just load the extension:
    - Click the extension icon and toggle it **ON**.
    - The extension will now score every page you visit locally and redirect phishing pages to a warning screen.
 
-### Retrain the Model
+### Rebuild the Seed Model
 
-The trained model (`saved_models/model.onnx`) and feature list (`saved_models/browser_features.json`) are committed and ready to use. To retrain from scratch:
+The seed dataset (`saved_models/seed_model.json` — scaled training points, labels and frozen scaler parameters) is committed and ready to use. To regenerate it:
 
 1. Download the dataset from Kaggle:  
    [Web page phishing detection dataset](https://www.kaggle.com/datasets/shashwatwork/web-page-phishing-detection-dataset/data)  
    Save it as `raw_data/dataset_phishing.csv`.
 
-2. Install training dependencies and run:
+2. Install build dependencies and run:
    ```sh
    pip install -r requirements.txt
-   python train_browser.py
+   python export_model.py
    ```
-   This overwrites `saved_models/model.onnx` and `saved_models/browser_features.json`.
+   This overwrites `saved_models/seed_model.json` and prints the KNN accuracy.
 
-The original 22-feature KNN baseline and browser feature selection rationale are documented in `cyberguard_phishing_detection.ipynb`.
+The original 22-feature KNN baseline and browser feature-selection rationale are documented in `cyberguard_phishing_detection.ipynb`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -125,15 +124,15 @@ Everything runs locally in your browser. No server, no network calls, no data le
 
 **Content script** (`extension/content.js`) — injected into every http/https page at `document_idle`. Sends the current URL and hyperlink count (`document.querySelectorAll('a').length`) to the service worker.
 
-**Service worker** (`extension/background.js`) — receives the page report, extracts 11 features from the URL string and hyperlink count via `extension/features.js`, and sends them to the offscreen document for inference.
+**Service worker** (`extension/background.js`) — receives the page report, extracts 11 features via `extension/features.js`, scales them with the frozen scaler and classifies with `extension/knn.js` over the merged seed + feedback dataset (`extension/storage.js`). If phishing, it redirects the tab to the built-in warning page.
 
-**Offscreen document** (`extension/offscreen.html` / `offscreen.js`) — hosts [onnxruntime-web](https://onnxruntime.ai/docs/get-started/with-javascript/web.html) (WebAssembly, bundled in `extension/vendor/`). Loads `saved_models/model.onnx` once, then scores each feature vector. Returns `PHISHING` or `OK`. If phishing, the service worker redirects the tab to the built-in warning page.
+**KNN classifier** (`extension/knn.js`) — a pure-JS port of scikit-learn's `KNeighborsClassifier(n_neighbors=3, metric="manhattan")` plus `MinMaxScaler.transform`. Classification is a majority vote of the 3 nearest seed points. Verified to match scikit-learn's predictions on 99.95% of the test set.
 
-**Trusted sites** — clicking **Proceed** on a warning adds that page's hostname to a local trusted list (`chrome.storage.local`). Pages on a trusted hostname skip the model on future visits. Manage (and remove) trusted sites from the extension popup. The list never leaves your device.
+**Seed dataset** (`saved_models/seed_model.json`) — the scaled training points, labels and frozen scaler parameters, exported by `export_model.py`. ~7 700 points from the [Hannousse & Yahiouche dataset](https://www.kaggle.com/datasets/shashwatwork/web-page-phishing-detection-dataset/data) (≈9 600 samples after cleaning).
 
-**The 11 features** — 10 lexical features derived from the URL string (length, character counts, digit ratio, suspicious-token hits) plus the page hyperlink count. WHOIS lookups, redirect-history probes, and word-length features that require a public-suffix-aware tokenizer are all omitted — they either cannot be computed client-side or cannot be reproduced in JS with exact parity to the training data. The remaining accuracy trade-off vs the old 22-feature server model is under 1 point.
+**Trusted sites** — clicking **Proceed** on a warning adds that page's hostname to a local trusted list (`chrome.storage.local`). Pages on a trusted hostname skip scoring on future visits. Manage (and remove) trusted sites from the extension popup. The list never leaves your device.
 
-**Model** — `saved_models/model.onnx` is a MinMaxScaler + Gradient Boosting classifier (n_estimators=300, max_depth=4) exported via [skl2onnx](https://onnx.ai/sklearn-onnx/), 332 KB. Trained on the [Hannousse & Yahiouche phishing dataset](https://www.kaggle.com/datasets/shashwatwork/web-page-phishing-detection-dataset/data) (≈9 600 samples after cleaning). Feature formulas are verified to produce 800/800 exact-match parity with the training dataset columns.
+**The 11 features** — 10 lexical features derived from the URL string (length, character counts, digit ratio, suspicious-token hits) plus the page hyperlink count. WHOIS lookups, redirect-history probes, and word-length features that require a public-suffix-aware tokenizer are all omitted — they either cannot be computed client-side or cannot be reproduced in JS with exact parity to the training data. Feature formulas are verified to produce 800/800 exact-match parity with the training dataset columns.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -142,26 +141,19 @@ Everything runs locally in your browser. No server, no network calls, no data le
 <!-- SELF-LEARNING -->
 ## Self-Learning (open-source build)
 
-The open-source build closes the loop: it collects your corrections and lets you fold them back into the model. (This is **disabled in the Chrome Web Store build** — see [Builds](#builds).)
+KNN is instance-based — it classifies by comparing against stored points — so **adding a labelled point *is* retraining**. There's no offline step and no model file to rebuild: corrections take effect on the very next page you visit.
 
-Because an ONNX model can't be retrained inside the browser, it's a two-step cycle:
+Your corrections are saved as scaled feature points in `chrome.storage.local` (`feedback_points`) and merged with the seed dataset at every inference. Two triggers (open-source build only):
 
-**Step 1 — collect feedback (in the browser).** Corrections are saved locally to `chrome.storage.local` as `{url, label, ts}`. Two triggers:
-- Clicking **Proceed** on a warning records the page as `legitimate` (a false positive the model got wrong).
-- The popup's **Mark this site as phishing** button records the current tab as `phishing` (a phishing page the model missed).
+- Clicking **Proceed** on a warning adds the page as a `legitimate` point (a false positive the model got wrong).
+- The popup's **Mark this site as phishing** button adds the current tab as a `phishing` point (a page the model missed).
 
-**Step 2 — retrain (locally).** In the popup, click **Export feedback** to download `phishing-feedback.json`, then run:
-
-```sh
-python retrain_from_feedback.py phishing-feedback.json
-```
-
-This computes each feedback URL's features, appends the examples to the dataset (up-weighted so a few corrections actually shift the model — tune with `--weight`), retrains, and overwrites `saved_models/model.onnx`. Reload the unpacked extension (`chrome://extensions` → ⟳) to pick up the new model.
+Everything stays on your device. (This is **disabled in the Chrome Web Store build** — see [Builds](#builds).)
 
 <a name="builds"></a>
 ### Builds
 
-The **repository is the open-source build** (`extension/config.js` → `IS_OSS_BUILD = true`): all of the self-learning features above are included.
+The **repository is the open-source build** (`extension/config.js` → `IS_OSS_BUILD = true`): the self-learning features above are included.
 
 The **Chrome Web Store build** strips them. Generate it with:
 
@@ -169,7 +161,7 @@ The **Chrome Web Store build** strips them. Generate it with:
 python build_cws.py
 ```
 
-This writes `dist/cws/` (load it to verify) and `dist/no-phishing-cws.zip` (upload it). It flips `IS_OSS_BUILD = false` — hiding the feedback buttons and disabling all feedback collection — and leaves the Python scripts, dataset and docs out of the package.
+This writes `dist/cws/` (load it to verify) and `dist/no-phishing-cws.zip` (upload it). It flips `IS_OSS_BUILD = false` — hiding the "Mark as phishing" button and stopping "Proceed" from adding points, so the store build never collects feedback — and leaves the Python scripts, dataset and docs out of the package.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -183,9 +175,9 @@ Results on the held-out test set (20% split, stratified, `random_state=42`):
 | Model | Features | Test Accuracy | Phishing Precision | Phishing Recall |
 |-------|----------|:---:|:---:|:---:|
 | KNN (k=3, manhattan) — previous server build | 22 (incl. WHOIS) | 92.65% | 93.98% | 90.89% |
-| **Gradient Boosting + ONNX — this build** | **11 (browser-only)** | **92.03%** | **91.50%** | **92.37%** |
+| **KNN (k=3, manhattan) in JS — this build** | **11 (browser-only)** | **89.42%** | **88.55%** | **90.15%** |
 
-Under 1 point separates the two builds. The in-browser model requires no companion server and 100% ONNX inference parity is verified against sklearn on the test set.
+The browser build trades ~3 points of accuracy for two things the server build can't offer: it runs entirely client-side (no server, no ONNX, no WebAssembly), and it **learns from your corrections in real time** — every "Proceed" or "Mark as phishing" becomes a new KNN point. The JS classifier reproduces scikit-learn's predictions on 99.95% of the test set.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

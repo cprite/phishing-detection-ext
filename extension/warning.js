@@ -18,12 +18,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // Proceeding means the user judges this page legitimate (a false positive).
     // Trust the domain so future visits aren't re-checked, and — in the OSS
-    // build — record a "legitimate" correction for offline retraining. Navigate
-    // only after the writes are acked so the next load sees the updated list.
+    // build — add a legitimate feedback point so the in-browser KNN learns from
+    // it. Navigate only after the writes are acked so the next load sees them.
     chrome.runtime.sendMessage({ action: "trustDomain", url: actualURL }, function () {
       if (typeof IS_OSS_BUILD !== "undefined" && IS_OSS_BUILD) {
         chrome.runtime.sendMessage(
-          { action: "recordFeedback", url: actualURL, label: "legitimate" },
+          { action: "addLegitimate", url: actualURL },
           function () { window.location.href = actualURL; }
         );
       } else {

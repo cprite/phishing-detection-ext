@@ -1,10 +1,5 @@
-# Training only (train_browser.py / retrain_from_feedback.py) — not needed to
-# run the extension.
+# Training only (export_model.py) — not needed to run the extension.
+# The extension itself is pure JavaScript with no runtime dependencies.
 pandas
 numpy
 scikit-learn
-skl2onnx
-onnxruntime
-# retrain_from_feedback.py fetches pages to count links (best effort).
-requests
-beautifulsoup4

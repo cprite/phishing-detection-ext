@@ -13,7 +13,7 @@ When protection is enabled, for each web page you visit the extension reads:
 
 From these it computes a small set of numeric features and runs them through a
 machine-learning model that is **bundled inside the extension** and executed
-locally in your browser (via WebAssembly). The model returns a single
+locally in your browser (in JavaScript). The model returns a single
 "phishing" / "legitimate" decision. If a page is judged to be phishing, the
 extension shows a warning page.
 
@@ -35,8 +35,9 @@ device:
 
 ## Permissions
 
-- **storage** — remembers whether protection is turned on.
-- **offscreen** — runs the local ML model (WebAssembly) in a background document.
+- **storage** — remembers whether protection is turned on and your trusted sites.
+- **tabs** — lets the extension redirect a tab to the warning page when a
+  phishing site is detected.
 - **Access to web pages** (content script on `http`/`https`) — needed to read
   the current page's URL and link count in order to score it locally.
 

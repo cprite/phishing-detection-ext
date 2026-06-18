@@ -55,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (typeof IS_OSS_BUILD !== 'undefined' && IS_OSS_BUILD) {
     const ossSection = document.getElementById('ossSection');
     const markBtn = document.getElementById('markPhishingBtn');
-    const exportBtn = document.getElementById('exportBtn');
     const status = document.getElementById('feedbackStatus');
     ossSection.style.display = 'block';
 
@@ -64,36 +63,13 @@ document.addEventListener('DOMContentLoaded', function() {
       if (text) setTimeout(function() { status.textContent = ''; }, 4000);
     }
 
-    // Mark the active tab's URL as phishing (a missed detection).
+    // Mark the active tab as phishing (a missed detection). The service worker
+    // scores the live page and adds a phishing point to the KNN dataset.
     markBtn.addEventListener('click', function() {
-      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        const url = tabs && tabs[0] && tabs[0].url;
-        if (!url || /^chrome/.test(url) || url.startsWith(chrome.runtime.getURL(''))) {
-          setStatus('Cannot mark this page.');
-          return;
-        }
-        chrome.runtime.sendMessage(
-          { action: 'recordFeedback', url: url, label: 'phishing' },
-          function() { setStatus('Marked as phishing. Thanks!'); }
-        );
-      });
-    });
-
-    // Export accumulated feedback to a JSON file for retrain_from_feedback.py.
-    exportBtn.addEventListener('click', function() {
-      chrome.storage.local.get('feedback', function(data) {
-        const fb = Array.isArray(data.feedback) ? data.feedback : [];
-        if (!fb.length) { setStatus('No feedback collected yet.'); return; }
-        const blob = new Blob([JSON.stringify(fb, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'phishing-feedback.json';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        setStatus(fb.length + ' item(s) exported.');
+      markBtn.disabled = true;
+      chrome.runtime.sendMessage({ action: 'markPhishing' }, function(resp) {
+        markBtn.disabled = false;
+        setStatus(resp && resp.ok ? 'Marked as phishing. Thanks!' : 'Cannot mark this page.');
       });
     });
   }
