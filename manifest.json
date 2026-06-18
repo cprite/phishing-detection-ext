@@ -1,23 +1,37 @@
 {
   "manifest_version": 3,
   "name": "No Phishing",
-  "version": "1.0",
-  "description": "No Phishing provides robust, real-time protection against phishing threats, ensuring safe browsing and enhanced internet security.",
+  "version": "2.0",
+  "description": "Real-time, on-device phishing detection. Pages are scored by a local ML model — no data ever leaves your browser.",
   "permissions": [
     "tabs",
-    "webNavigation",
-    "activeTab",
     "storage",
-    "http://127.0.0.1:5030"
+    "offscreen"
   ],
   "background": {
     "service_worker": "extension/background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["extension/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
     "default_popup": "extension/popup.html",
-    "default_icon": "images/logo.png"
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
   }
 }

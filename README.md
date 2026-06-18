@@ -56,7 +56,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-**No Phishing** is a browser extension that uses machine learning to detect phishing URLs in real time and block them before you land on the page. It achieves **92.7% test accuracy** using a K-Nearest Neighbours classifier trained on 22 URL-derived features. The extension is designed for Google Chrome.
+**No Phishing** is a self-contained Chrome extension that detects phishing URLs in real time. The ML model runs **entirely inside your browser** using WebAssembly — no companion server, no data sent anywhere. It achieves **92.0% test accuracy** using a Gradient Boosting classifier trained on 11 browser-computable features.
 
 ### Disclaimer
 This extension is intended as a supplementary tool for online safety. While it demonstrates high accuracy, it is not infallible. As the developer, I am not a certified cybersecurity professional, and the extension could make errors. Users are advised to exercise caution and judgment. By using "No Phishing," you acknowledge and accept responsibility for your online safety.
@@ -70,7 +70,7 @@ This extension is intended as a supplementary tool for online safety. While it d
 * [![Pandas](https://img.shields.io/badge/Pandas-2C2D72?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
 * [![NumPy](https://img.shields.io/badge/Numpy-777BB4?style=for-the-badge&logo=numpy&logoColor=white)](https://numpy.org/)
 * [![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
-* [![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+* [![ONNX](https://img.shields.io/badge/ONNX-005CED?style=for-the-badge&logo=onnx&logoColor=white)](https://onnxruntime.ai/)
 * [![Google Chrome](https://img.shields.io/badge/Google_chrome-4285F4?style=for-the-badge&logo=Google-chrome&logoColor=white)](https://www.google.com/chrome/)
 * [![VScode](https://img.shields.io/badge/VSCode-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white)](https://code.visualstudio.com/)
 
@@ -81,47 +81,38 @@ This extension is intended as a supplementary tool for online safety. While it d
 <!-- GETTING STARTED -->
 ## Getting Started
 
+No Python, no server, no setup. Just load the extension:
+
 1. Clone the repo
    ```sh
    git clone https://github.com/cprite/phishing-detection-ext.git
-   cd phishing-detection-ext
    ```
-2. Install the required dependencies
-   ```sh
-   pip install -r requirements.txt
-   ```
-3. Start the local inference server
-   ```sh
-   python app.py
-   ```
-   The server runs on `http://127.0.0.1:5030` and must be running for the extension to work.
-
-4. Load the extension in Google Chrome
+2. Load the extension in Google Chrome
    - Open Google Chrome and navigate to `chrome://extensions/`.
-   - Enable `Developer mode` by toggling the switch in the top-right corner.
-   - Click `Load unpacked`.
-   - Select the cloned `phishing-detection-ext` directory.
-   - The extension will appear in your Chrome toolbar.
+   - Enable **Developer mode** (top-right toggle).
+   - Click **Load unpacked** and select the cloned `phishing-detection-ext` directory.
+   - The extension appears in your Chrome toolbar.
 
-5. Activate the extension
-   - Click the extension icon in the Chrome toolbar to toggle it **ON**.
-   - The extension will now check every page you navigate to against the local server and redirect phishing pages to a warning screen.
+3. Activate the extension
+   - Click the extension icon and toggle it **ON**.
+   - The extension will now score every page you visit locally and redirect phishing pages to a warning screen.
 
 ### Retrain the Model
 
-The pre-trained artifacts (`saved_models/knn_model.pkl`, `saved_models/scaler.pkl`, `saved_models/feature_names.json`) are committed and ready to use. To retrain from scratch:
+The trained model (`saved_models/model.onnx`) and feature list (`saved_models/browser_features.json`) are committed and ready to use. To retrain from scratch:
 
 1. Download the dataset from Kaggle:  
    [Web page phishing detection dataset](https://www.kaggle.com/datasets/shashwatwork/web-page-phishing-detection-dataset/data)  
    Save it as `raw_data/dataset_phishing.csv`.
 
-2. Install training dependencies (included in `requirements.txt`) and run:
+2. Install training dependencies and run:
    ```sh
-   python train.py
+   pip install -r requirements.txt
+   python train_browser.py
    ```
-   This will overwrite the artifacts in `saved_models/` and print the final metrics.
+   This overwrites `saved_models/model.onnx` and `saved_models/browser_features.json`.
 
-The full training methodology is documented in `cyberguard_phishing_detection.ipynb`.
+The original 22-feature KNN baseline and browser feature selection rationale are documented in `cyberguard_phishing_detection.ipynb`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -130,24 +121,17 @@ The full training methodology is documented in `cyberguard_phishing_detection.ip
 <!-- HOW IT WORKS -->
 ## How It Works
 
-The system has two parts:
+Everything runs locally in your browser. No server, no network calls, no data leaves your device.
 
-**Extension (JavaScript)** — A Chrome Manifest V3 extension that fires on every completed page load. It POSTs the current tab's URL to the local Flask server. If the server responds `PHISHING`, the tab is redirected to a built-in warning page.
+**Content script** (`extension/content.js`) — injected into every http/https page at `document_idle`. Sends the current URL and hyperlink count (`document.querySelectorAll('a').length`) to the service worker.
 
-**Inference server (Python/Flask)** — `app.py` loads three artifacts produced by `train.py`:
-- `knn_model.pkl` — a KNN classifier (k=3, Manhattan distance)
-- `scaler.pkl` — a MinMaxScaler fitted on the training features
-- `feature_names.json` — the ordered list of 22 features the model expects
+**Service worker** (`extension/background.js`) — receives the page report, extracts 11 features from the URL string and hyperlink count via `extension/features.js`, and sends them to the offscreen document for inference.
 
-On each `/check_url` request, `libs/features_comp.py` extracts 22 features from the URL (lexical features from the URL string, content features from the fetched page, and WHOIS features), scales them, and returns the classifier's decision.
+**Offscreen document** (`extension/offscreen.html` / `offscreen.js`) — hosts [onnxruntime-web](https://onnxruntime.ai/docs/get-started/with-javascript/web.html) (WebAssembly, bundled in `extension/vendor/`). Loads `saved_models/model.onnx` once, then scores each feature vector. Returns `PHISHING` or `OK`. If phishing, the service worker redirects the tab to the built-in warning page.
 
-**Feature selection** — The full Kaggle dataset has 87+ raw features. Training screens them down to 22 via four passes:
-1. Remove highly correlated pairs (|r| > 0.75)
-2. Remove near-zero variance features (var < 0.005)
-3. Remove weak linear correlation with the target (|r| < 0.023)
-4. Remove low Random Forest importance (< 0.005)
+**The 11 features** — 10 lexical features derived from the URL string (length, character counts, digit ratio, suspicious-token hits) plus the page hyperlink count. WHOIS lookups, redirect-history probes, and word-length features that require a public-suffix-aware tokenizer are all omitted — they either cannot be computed client-side or cannot be reproduced in JS with exact parity to the training data. The remaining accuracy trade-off vs the old 22-feature server model is under 1 point.
 
-Three features available in the dataset (`web_traffic`, `google_index`, `page_rank`) are excluded at inference time because they require third-party APIs the extension cannot call.
+**Model** — `saved_models/model.onnx` is a MinMaxScaler + Gradient Boosting classifier (n_estimators=300, max_depth=4) exported via [skl2onnx](https://onnx.ai/sklearn-onnx/), 332 KB. Trained on the [Hannousse & Yahiouche phishing dataset](https://www.kaggle.com/datasets/shashwatwork/web-page-phishing-detection-dataset/data) (≈9 600 samples after cleaning). Feature formulas are verified to produce 800/800 exact-match parity with the training dataset columns.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -158,18 +142,12 @@ Three features available in the dataset (`web_traffic`, `google_index`, `page_ra
 
 Results on the held-out test set (20% split, stratified, `random_state=42`):
 
-| Model               | Test Accuracy | CV Accuracy (5-fold) |
-|---------------------|--------------|----------------------|
-| KNN (k=3, manhattan) | **92.65%**  | 91.63% ± 0.67%      |
-| Logistic Regression  | 89.79%       | 89.63% ± 0.18%      |
+| Model | Features | Test Accuracy | Phishing Precision | Phishing Recall |
+|-------|----------|:---:|:---:|:---:|
+| KNN (k=3, manhattan) — previous server build | 22 (incl. WHOIS) | 92.65% | 93.98% | 90.89% |
+| **Gradient Boosting + ONNX — this build** | **11 (browser-only)** | **92.03%** | **91.50%** | **92.37%** |
 
-KNN classification report (test set, 1 919 samples):
-
-|              | Precision | Recall | F1-score | Support |
-|--------------|-----------|--------|----------|---------|
-| Legitimate   | 0.91      | 0.94   | 0.93     | 975     |
-| Phishing     | 0.94      | 0.91   | 0.92     | 944     |
-| **Accuracy** |           |        | **0.93** | 1 919   |
+Under 1 point separates the two builds. The in-browser model requires no companion server and 100% ONNX inference parity is verified against sklearn on the test set.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

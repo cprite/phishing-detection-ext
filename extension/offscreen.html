@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>No Phishing — model runtime</title>
+</head>
+<body>
+  <!-- Offscreen document: hosts onnxruntime-web (WebAssembly) so the service
+       worker can score pages with the local model. No UI. -->
+  <script src="vendor/ort.wasm.min.js"></script>
+  <script src="offscreen.js"></script>
+</body>
+</html>
