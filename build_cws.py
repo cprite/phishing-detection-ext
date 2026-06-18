@@ -56,6 +56,12 @@ def main():
         else:
             print(f"  warning: {item} not found, skipping")
 
+    # seed_test.json powers the OSS-only "Model stats" accuracy readout; the
+    # store build has no feedback UI, so drop it to keep the package minimal.
+    test_set = os.path.join(OUT, "saved_models", "seed_test.json")
+    if os.path.exists(test_set):
+        os.remove(test_set)
+
     # Flip the build flag off so all OSS-only feedback UI/logic is disabled.
     cfg = os.path.join(OUT, "extension", "config.js")
     with open(cfg) as f:

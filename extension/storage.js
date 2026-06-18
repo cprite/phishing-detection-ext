@@ -13,6 +13,7 @@
   "use strict";
 
   var seedPromise = null;
+  var testPromise = null;
 
   // Load + cache the bundled seed model (feature_names, k, scaler, X, y).
   function loadSeed() {
@@ -21,6 +22,18 @@
         .then(function (r) { return r.json(); });
     }
     return seedPromise;
+  }
+
+  // Load + cache the held-out test set ({X, y}) used for the popup's unbiased
+  // accuracy readout. These points are never added to the KNN dataset. Absent
+  // in the store build (stripped by build_cws.py) — resolve to an empty set.
+  function loadTest() {
+    if (!testPromise) {
+      testPromise = fetch(chrome.runtime.getURL("saved_models/seed_test.json"))
+        .then(function (r) { return r.json(); })
+        .catch(function () { return { X: [], y: [] }; });
+    }
+    return testPromise;
   }
 
   async function getFeedbackPoints() {
@@ -52,6 +65,7 @@
 
   root.NoPhishingStore = {
     loadSeed: loadSeed,
+    loadTest: loadTest,
     getFeedbackPoints: getFeedbackPoints,
     addFeedbackPoint: addFeedbackPoint,
     buildDataset: buildDataset,

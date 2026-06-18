@@ -86,33 +86,46 @@ async function markActiveTabPhishing() {
 // --- Model stats (self-learning transparency) ------------------------------
 
 // Summarise the in-browser model so the popup can show that it is improving:
-// how many feedback points exist, when the last one was added, and a leave-one-
-// out accuracy over the feedback points (each predicted against seed + the
-// *other* feedback, so a point never votes for itself — an honest estimate of
-// how well the current model classifies the user's own corrections).
+// how many feedback points exist, when the last one was added, and the accuracy
+// on a fixed HELD-OUT test set (saved_models/seed_test.json) that is never added
+// to the KNN dataset — an unbiased estimate, unlike scoring the user's own
+// feedback. Each test point is classified against the live dataset (seed +
+// feedback), so the number moves as feedback accumulates.
+//
+// Scoring the whole test set is O(test * dataset), so it is cached keyed on the
+// feedback count (the test set and seed are immutable): it recomputes once per
+// new feedback point, and re-opening the popup is instant.
 async function computeStats() {
   const fb = await NoPhishingStore.getFeedbackPoints();
-  const ds = await NoPhishingStore.buildDataset();
-  const seedLen = ds.X.length - fb.length; // feedback occupies the tail of ds
+  const count = fb.length;
 
   let lastUpdated = null;
   for (const p of fb) {
     if (p.ts && (lastUpdated === null || p.ts > lastUpdated)) lastUpdated = p.ts;
   }
 
-  let correct = 0;
-  for (let i = 0; i < fb.length; i++) {
-    const gi = seedLen + i; // this point's index in the merged dataset
-    const X = ds.X.slice(0, gi).concat(ds.X.slice(gi + 1));
-    const y = ds.y.slice(0, gi).concat(ds.y.slice(gi + 1));
-    const { label } = NoPhishingKNN.predict(ds.X[gi], X, y, ds.k);
-    if (label === fb[i].y) correct++;
+  let accuracy = null;
+  const cached = (await chrome.storage.local.get("stats_cache")).stats_cache;
+  if (cached && cached.count === count && typeof cached.accuracy === "number") {
+    accuracy = cached.accuracy;
+  } else {
+    const ds = await NoPhishingStore.buildDataset();
+    const test = await NoPhishingStore.loadTest();
+    if (test && Array.isArray(test.X) && test.X.length) {
+      let correct = 0;
+      for (let i = 0; i < test.X.length; i++) {
+        const { label } = NoPhishingKNN.predict(test.X[i], ds.X, ds.y, ds.k);
+        if (label === test.y[i]) correct++;
+      }
+      accuracy = correct / test.X.length;
+      await chrome.storage.local.set({ stats_cache: { count: count, accuracy: accuracy } });
+    }
   }
 
   return {
-    feedbackCount: fb.length,
+    feedbackCount: count,
     lastUpdated: lastUpdated, // ISO string or null
-    accuracy: fb.length ? correct / fb.length : null, // 0..1 or null
+    accuracy: accuracy, // 0..1 on held-out test set, or null
   };
 }
 

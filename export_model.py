@@ -15,6 +15,13 @@ needs to saved_models/seed_model.json:
       "y": [0|1, ...]                                         # labels
     }
 
+It also writes a separate hold-out test set to saved_models/seed_test.json
+({"X": [...scaled...], "y": [...]}). Those points are NEVER added to the KNN
+dataset — the extension scores them after every feedback addition to report an
+unbiased "Accuracy (on held-out test set)" in the popup. The test set is a
+stratified sample capped at TEST_SAMPLE_SIZE so the bundle stays small and the
+in-browser scoring stays fast.
+
 Because KNN classifies by majority vote of the nearest points, new user-feedback
 points added in the browser participate immediately — that is the in-browser
 "retraining". The scaler is frozen here and never recomputed.
@@ -51,6 +58,11 @@ BROWSER_FEATURES = [
 K = 3
 METRIC = "manhattan"
 
+# The held-out test set ships in the bundle and is scored in-browser on every
+# feedback addition, so cap it: a stratified sample keeps the bundle small and
+# KNN scoring fast while staying a statistically sound accuracy estimate.
+TEST_SAMPLE_SIZE = 1000
+
 
 def main():
     data = pd.read_csv(DATASET)
@@ -79,6 +91,17 @@ def main():
     print(f"  precision (ph): {precision_score(y_test, pred):.4f}")
     print(f"  recall (ph):    {recall_score(y_test, pred):.4f}")
 
+    # Stratified sample of the hold-out set to ship + score in-browser.
+    if len(X_test_s) > TEST_SAMPLE_SIZE:
+        X_test_s, _, y_test, _ = train_test_split(
+            X_test_s, y_test, train_size=TEST_SAMPLE_SIZE,
+            random_state=42, stratify=y_test,
+        )
+    sample_pred = knn.predict(X_test_s)
+    print(f"  held-out sample: {len(X_test_s)} points, "
+          f"accuracy {accuracy_score(y_test, sample_pred):.4f} "
+          f"(== popup value at 0 feedback)")
+
     seed = {
         "feature_names": BROWSER_FEATURES,
         "k": K,
@@ -92,12 +115,23 @@ def main():
         "y": [int(v) for v in y_train.tolist()],
     }
 
+    test = {
+        "X": [[round(v, 6) for v in row] for row in X_test_s.tolist()],
+        "y": [int(v) for v in y_test.tolist()],
+    }
+
     os.makedirs(MODELS_DIR, exist_ok=True)
     out = os.path.join(MODELS_DIR, "seed_model.json")
     with open(out, "w") as f:
         json.dump(seed, f, separators=(",", ":"))
     print(f"\nWrote {out} "
           f"({os.path.getsize(out)} bytes, {len(seed['X'])} seed points).")
+
+    out_test = os.path.join(MODELS_DIR, "seed_test.json")
+    with open(out_test, "w") as f:
+        json.dump(test, f, separators=(",", ":"))
+    print(f"Wrote {out_test} "
+          f"({os.path.getsize(out_test)} bytes, {len(test['X'])} held-out points).")
 
 
 if __name__ == "__main__":

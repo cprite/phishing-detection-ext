@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!s) return;
         document.getElementById('statUpdated').textContent =
           s.lastUpdated ? new Date(s.lastUpdated).toLocaleString() : '—';
-        document.getElementById('statCount').textContent = s.feedbackCount;
+        document.getElementById('statCount').textContent = s.feedbackCount + ' added';
         document.getElementById('statAcc').textContent =
           s.accuracy === null ? '—' : Math.round(s.accuracy * 100) + '%';
       });

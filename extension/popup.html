@@ -201,6 +201,13 @@
       font-weight: 600;
       color: #222;
     }
+
+    .stats .note {
+      font-size: 0.72em;
+      color: #999;
+      margin: 6px 0 0;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -224,7 +231,8 @@
       <h3>Model stats</h3>
       <div class="row"><span>Last updated:</span> <b id="statUpdated">—</b></div>
       <div class="row"><span>Feedback points:</span> <b id="statCount">0</b></div>
-      <div class="row"><span>Accuracy (on feedback):</span> <b id="statAcc">—</b></div>
+      <div class="row"><span>Accuracy:</span> <b id="statAcc">—</b></div>
+      <p class="note">On a held-out test set the model never trained on.</p>
     </div>
   </div>
 
