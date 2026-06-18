@@ -30,7 +30,9 @@
   }
 
   // Majority vote of the k nearest points. X is an array of scaled vectors,
-  // y the parallel array of 0/1 labels. Returns { label, votes, k }.
+  // y the parallel array of 0/1 labels. Returns { label, votes, k, ratio }
+  // where ratio = votes / k is the fraction of neighbours voting PHISHING —
+  // i.e. the model's confidence that the page is phishing (0..1).
   // Ties in distance are broken by original order (stable), matching the
   // "first k after a stable sort by distance" behaviour.
   function predict(queryScaled, X, y, k) {
@@ -46,7 +48,8 @@
     var phishing = 0;
     for (var j = 0; j < kk; j++) phishing += dists[j].label === 1 ? 1 : 0;
     var label = phishing * 2 > kk ? 1 : 0; // majority for binary labels
-    return { label: label, votes: phishing, k: kk };
+    var ratio = kk > 0 ? phishing / kk : 0; // confidence: share voting PHISHING
+    return { label: label, votes: phishing, k: kk, ratio: ratio };
   }
 
   var api = { scale: scale, manhattan: manhattan, predict: predict };

@@ -60,6 +60,12 @@
             height: auto;
             margin-bottom: 20px;
         }
+
+        .confidence {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e74c3c;
+        }
     </style>
 </head>
 <body>
@@ -67,6 +73,7 @@
         <img src="../images/warning.png" alt="Warning Icon">
         <h1>Phishing Warning!</h1>
         <p>This website may be a phishing site. Proceed with caution.</p>
+        <p id="confidence" class="confidence" hidden></p>
         <button id="proceedBtn">Proceed to URL</button>
         <button id="goBackBtn">Go Back</button>
     </div>

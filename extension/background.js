@@ -126,12 +126,17 @@ async function handlePage(msg, tabId) {
     const ds = await NoPhishingStore.buildDataset();
     const feats = NoPhishingFeatures.extractFeatures(url, msg.nbHyperlinks);
     const scaled = NoPhishingKNN.scale(feats, ds.scaler);
-    const { label } = NoPhishingKNN.predict(scaled, ds.X, ds.y, ds.k);
+    const { label, ratio } = NoPhishingKNN.predict(scaled, ds.X, ds.y, ds.k);
     if (label === 1) {
       // Cache the scaled vector so "Proceed" can log it as a legitimate point.
       await chrome.storage.session.set({ ["pending:" + url]: scaled });
+      // Pass the phishing confidence (share of neighbours voting phishing,
+      // 0..100) so the warning page can show how likely the verdict is.
+      const conf = Math.round(ratio * 100);
       const warningUrl =
-        chrome.runtime.getURL("extension/warning.html") + "?url=" + encodeURIComponent(url);
+        chrome.runtime.getURL("extension/warning.html") +
+        "?url=" + encodeURIComponent(url) +
+        "&conf=" + conf;
       chrome.tabs.update(tabId, { url: warningUrl });
     }
   } catch (e) {

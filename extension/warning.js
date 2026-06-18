@@ -10,6 +10,20 @@ document.addEventListener('DOMContentLoaded', function() {
     return urlParams.get(param);
   }
 
+  // Show the KNN confidence (share of nearest neighbours voting phishing).
+  // Higher percentage = more dangerous.
+  function showConfidence() {
+    const el = document.getElementById('confidence');
+    if (!el) return;
+    const raw = getQueryParam('conf');
+    if (raw === null) return;
+    const pct = Math.max(0, Math.min(100, Math.round(Number(raw))));
+    if (!Number.isFinite(pct)) return;
+    el.textContent = '⚠️ This site is likely phishing (confidence: ' + pct + '%)';
+    el.hidden = false;
+  }
+  showConfidence();
+
   function proceedToURL() {
     const actualURL = getQueryParam('url');
     if (!actualURL) {
