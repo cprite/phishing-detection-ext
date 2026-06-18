@@ -16,10 +16,19 @@ document.addEventListener('DOMContentLoaded', function() {
       console.error('URL parameter is missing');
       return;
     }
-    // Trust this domain so future visits aren't re-checked, then navigate.
-    // Navigation waits for the ack so the next page load sees the updated list.
+    // Proceeding means the user judges this page legitimate (a false positive).
+    // Trust the domain so future visits aren't re-checked, and — in the OSS
+    // build — record a "legitimate" correction for offline retraining. Navigate
+    // only after the writes are acked so the next load sees the updated list.
     chrome.runtime.sendMessage({ action: "trustDomain", url: actualURL }, function () {
-      window.location.href = actualURL;
+      if (typeof IS_OSS_BUILD !== "undefined" && IS_OSS_BUILD) {
+        chrome.runtime.sendMessage(
+          { action: "recordFeedback", url: actualURL, label: "legitimate" },
+          function () { window.location.href = actualURL; }
+        );
+      } else {
+        window.location.href = actualURL;
+      }
     });
   }
 

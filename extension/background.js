@@ -9,7 +9,8 @@
  * page's hostname is saved to chrome.storage.local (trusted_domains). Future
  * visits to any URL on that hostname skip the model entirely.
  */
-importScripts("features.js"); // provides self.NoPhishingFeatures
+importScripts("config.js");   // provides self.IS_OSS_BUILD
+importScripts("features.js");  // provides self.NoPhishingFeatures
 
 const OFFSCREEN_PATH = "extension/offscreen.html";
 let creatingOffscreen = null;
@@ -68,6 +69,24 @@ async function trustDomain(url) {
   }
 }
 
+// --- Self-learning feedback (OSS build only) -------------------------------
+// ONNX models cannot be retrained in the browser, so feedback is accumulated
+// here and folded back into the model offline by retrain_from_feedback.py.
+
+async function getFeedback() {
+  const { feedback } = await chrome.storage.local.get("feedback");
+  return Array.isArray(feedback) ? feedback : [];
+}
+
+// Append a {url, label, ts} feedback example. No-op outside the OSS build.
+async function recordFeedback(url, label) {
+  if (!IS_OSS_BUILD) return;
+  if (!url || (label !== "phishing" && label !== "legitimate")) return;
+  const feedback = await getFeedback();
+  feedback.push({ url, label, ts: new Date().toISOString() });
+  await chrome.storage.local.set({ feedback });
+}
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.set({ isEnabled: false });
 });
@@ -83,6 +102,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // write lands (the next page load must see the updated trusted list).
     trustDomain(msg.url).then(() => sendResponse({ ok: true }));
     return true; // keep the channel open for the async response
+  }
+  if (msg.action === "recordFeedback") {
+    recordFeedback(msg.url, msg.label).then(() => sendResponse({ ok: true }));
+    return true;
   }
   if (msg.type === "NP_PAGE" && sender.tab) {
     handlePage(msg, sender.tab.id);

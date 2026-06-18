@@ -139,6 +139,42 @@ Everything runs locally in your browser. No server, no network calls, no data le
 
 
 
+<!-- SELF-LEARNING -->
+## Self-Learning (open-source build)
+
+The open-source build closes the loop: it collects your corrections and lets you fold them back into the model. (This is **disabled in the Chrome Web Store build** — see [Builds](#builds).)
+
+Because an ONNX model can't be retrained inside the browser, it's a two-step cycle:
+
+**Step 1 — collect feedback (in the browser).** Corrections are saved locally to `chrome.storage.local` as `{url, label, ts}`. Two triggers:
+- Clicking **Proceed** on a warning records the page as `legitimate` (a false positive the model got wrong).
+- The popup's **Mark this site as phishing** button records the current tab as `phishing` (a phishing page the model missed).
+
+**Step 2 — retrain (locally).** In the popup, click **Export feedback** to download `phishing-feedback.json`, then run:
+
+```sh
+python retrain_from_feedback.py phishing-feedback.json
+```
+
+This computes each feedback URL's features, appends the examples to the dataset (up-weighted so a few corrections actually shift the model — tune with `--weight`), retrains, and overwrites `saved_models/model.onnx`. Reload the unpacked extension (`chrome://extensions` → ⟳) to pick up the new model.
+
+<a name="builds"></a>
+### Builds
+
+The **repository is the open-source build** (`extension/config.js` → `IS_OSS_BUILD = true`): all of the self-learning features above are included.
+
+The **Chrome Web Store build** strips them. Generate it with:
+
+```sh
+python build_cws.py
+```
+
+This writes `dist/cws/` (load it to verify) and `dist/no-phishing-cws.zip` (upload it). It flips `IS_OSS_BUILD = false` — hiding the feedback buttons and disabling all feedback collection — and leaves the Python scripts, dataset and docs out of the package.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
 <!-- MODEL PERFORMANCE -->
 ## Model Performance
 

@@ -135,6 +135,47 @@
     #trustedList .remove:hover {
       color: #c0392b;
     }
+
+    .oss {
+      margin-top: 18px;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 12px;
+    }
+
+    .oss h2 {
+      font-size: 0.85em;
+      color: #444;
+      margin: 0 0 8px;
+    }
+
+    .oss-btn {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 6px 0;
+      padding: 8px 10px;
+      font-size: 0.85em;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #fff;
+      background-color: #e74c3c;
+    }
+
+    .oss-btn.secondary {
+      background-color: #34495e;
+    }
+
+    .oss-btn:hover {
+      filter: brightness(0.92);
+    }
+
+    #feedbackStatus {
+      font-size: 0.78em;
+      color: #2c7;
+      min-height: 1em;
+      margin: 6px 0 0;
+    }
   </style>
 </head>
 <body>
@@ -149,11 +190,19 @@
     <ul id="trustedList"></ul>
   </div>
 
+  <div class="oss" id="ossSection" style="display:none">
+    <h2>Self-learning (open-source build)</h2>
+    <button id="markPhishingBtn" class="oss-btn">Mark this site as phishing</button>
+    <button id="exportBtn" class="oss-btn secondary">Export feedback</button>
+    <p id="feedbackStatus"></p>
+  </div>
+
   <div class="footer">
     <p>Disclaimer: This extension is for educational purposes only.</p>
     <p>Author: <a href="https://github.com/cprite" target="_blank">cprite</a></p>
   </div>
 
+  <script src="config.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
