@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — No Phishing</title>
+  <meta name="description" content="Privacy policy for the No Phishing Chrome extension. No browsing data ever leaves your device.">
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+      color: #1a1a1a;
+      background: #fff;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { color: #e6e6e6; background: #16181c; }
+      a { color: #6ea8fe; }
+      code { background: #2a2d34; }
+      .updated { color: #9aa0a6; }
+    }
+    h1 { font-size: 1.9rem; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.25rem; margin-top: 2rem; border-bottom: 1px solid rgba(128,128,128,0.25); padding-bottom: 0.3rem; }
+    .updated { color: #666; font-size: 0.9rem; margin-bottom: 2rem; }
+    ul { padding-left: 1.3rem; }
+    li { margin: 0.35rem 0; }
+    code { background: #f0f1f3; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.9em; }
+    .lead { font-size: 1.1rem; font-weight: 500; }
+    a { color: #0b5ed7; }
+    footer { margin-top: 3rem; font-size: 0.85rem; color: #888; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy — No Phishing</h1>
+  <p class="updated">Last updated: 2026-06-18</p>
+
+  <p class="lead">No Phishing is built so that <strong>none of your browsing data ever leaves your device.</strong></p>
+
+  <h2>What the extension does</h2>
+  <p>When protection is enabled, for each web page you visit the extension reads:</p>
+  <ul>
+    <li>the page <strong>URL</strong>, and</li>
+    <li>the <strong>number of links</strong> (<code>&lt;a&gt;</code> tags) on the page.</li>
+  </ul>
+  <p>
+    From these it computes a small set of numeric features and runs them through a
+    machine-learning model that is <strong>bundled inside the extension</strong> and executed
+    locally in your browser (via WebAssembly). The model returns a single
+    "phishing" / "legitimate" decision. If a page is judged to be phishing, the
+    extension shows a warning page.
+  </p>
+
+  <h2>What the extension does <em>not</em> do</h2>
+  <ul>
+    <li>It does <strong>not</strong> send your URLs, page contents, or any other data to any server. There is no remote API, no analytics, and no telemetry.</li>
+    <li>It does <strong>not</strong> make any network requests of its own.</li>
+    <li>It does <strong>not</strong> collect, store, or share any personal information.</li>
+    <li>It does <strong>not</strong> use cookies or track you across sites.</li>
+  </ul>
+  <p>
+    The only thing stored is a single on/off setting (<code>isEnabled</code>), kept in
+    Chrome's local extension storage on your device.
+  </p>
+
+  <h2>Permissions</h2>
+  <ul>
+    <li><strong>storage</strong> — remembers whether protection is turned on.</li>
+    <li><strong>offscreen</strong> — runs the local ML model (WebAssembly) in a background document.</li>
+    <li><strong>Access to web pages</strong> (content script on <code>http</code>/<code>https</code>) — needed to read the current page's URL and link count in order to score it locally.</li>
+  </ul>
+
+  <h2>Contact</h2>
+  <p>Questions: open an issue at <a href="https://github.com/cprite/phishing-detection-ext">github.com/cprite/phishing-detection-ext</a>.</p>
+
+  <footer>No Phishing — open-source phishing detection that runs entirely in your browser.</footer>
+</body>
+</html>
