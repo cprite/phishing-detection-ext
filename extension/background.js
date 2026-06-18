@@ -49,16 +49,28 @@ async function addPoint(scaledFeatures, label) {
   await NoPhishingStore.addFeedbackPoint(scaledFeatures, label);
 }
 
-// "Proceed" past a warning: the scaled features were cached at detection time.
-async function addLegitimateFromPending(url) {
+// "Proceed" past a warning records the page as a LEGITIMATE feedback point so
+// the in-browser KNN learns the correction. This path is mandatory, not best-
+// effort: a legitimate point is ALWAYS added.
+//
+// Preferred source is the scaled vector cached at detection time — it carries
+// nb_hyperlinks, a live-DOM feature that cannot be recovered once the warning
+// page has replaced the original page. If that cache is gone (e.g. the browser
+// session was cleared between detection and proceed), recompute from the full
+// URL: the 10 lexical features are exact, nb_hyperlinks falls back to 0.
+async function addLegitimateForUrl(url) {
   if (!IS_OSS_BUILD || !url) return;
   const key = "pending:" + url;
   const data = await chrome.storage.session.get(key);
-  const scaled = data[key];
-  if (Array.isArray(scaled)) {
-    await addPoint(scaled, 0);
-    await chrome.storage.session.remove(key);
+  let scaled = data[key];
+  if (!Array.isArray(scaled)) {
+    const ds = await NoPhishingStore.buildDataset();
+    const feats = NoPhishingFeatures.extractFeatures(url, 0); // lexical-only fallback
+    scaled = NoPhishingKNN.scale(feats, ds.scaler);
+    console.warn("No Phishing: pending vector missing, recomputed legit point from URL");
   }
+  await addPoint(scaled, 0);
+  await chrome.storage.session.remove(key);
 }
 
 // "Mark as phishing" from the popup: score the active tab's URL live.
@@ -143,7 +155,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
   if (msg.action === "addLegitimate") {
-    addLegitimateFromPending(msg.url).then(() => sendResponse({ ok: true }));
+    addLegitimateForUrl(msg.url).then(() => sendResponse({ ok: true }));
     return true;
   }
   if (msg.action === "markPhishing") {
