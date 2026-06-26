@@ -130,7 +130,7 @@ Everything runs locally in your browser. No server, no network calls, no data le
 
 **Seed dataset** (`saved_models/seed_model.json`) — the scaled training points, labels and frozen scaler parameters, exported by `export_model.py`. ~7 700 points from the [Hannousse & Yahiouche dataset](https://www.kaggle.com/datasets/shashwatwork/web-page-phishing-detection-dataset/data) (≈9 600 samples after cleaning).
 
-**Trusted sites** — clicking **Proceed** on a warning adds that page's hostname to a local trusted list (`chrome.storage.local`). Pages on a trusted hostname skip scoring on future visits. Manage (and remove) trusted sites from the extension popup. The list never leaves your device.
+**Trusted sites** — clicking **Proceed** on a warning adds that page's hostname to a local trusted list (`chrome.storage.local`). Pages on a trusted hostname are **never blocked**, but in the open-source build they are still scored silently in the background: a trusted host is treated as ground truth, so if the model ever flags one as phishing that verdict is fed back as a `legitimate` point automatically (no warning, no prompt). Manage (and remove) trusted sites from the extension popup. The list never leaves your device.
 
 **The 11 features** — 10 lexical features derived from the URL string (length, character counts, digit ratio, suspicious-token hits) plus the page hyperlink count. WHOIS lookups, redirect-history probes, and word-length features that require a public-suffix-aware tokenizer are all omitted — they either cannot be computed client-side or cannot be reproduced in JS with exact parity to the training data. Feature formulas are verified to produce 800/800 exact-match parity with the training dataset columns.
 
@@ -146,6 +146,7 @@ KNN is instance-based — it classifies by comparing against stored points — s
 Your corrections are saved as scaled feature points in `chrome.storage.local` (`feedback_points`) and merged with the seed dataset at every inference. Two triggers (open-source build only):
 
 - Clicking **Proceed** on a warning adds the page as a `legitimate` point (a false positive the model got wrong).
+- Visiting a **trusted** host that the model flags as phishing adds it as a `legitimate` point automatically and silently — the trusted list is the source of truth, so a flag there is a correction signal.
 - The popup's **Mark this site as phishing** button adds the current tab as a `phishing` point (a page the model missed).
 
 Everything stays on your device. (This is **disabled in the Chrome Web Store build** — see [Builds](#builds).)

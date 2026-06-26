@@ -8,8 +8,11 @@
  * model "retrains" in the browser. No server, no ONNX, no WebAssembly.
  *
  * Trusted domains: "Proceed" on a warning trusts that hostname so future visits
- * skip scoring. In the OSS build, "Proceed" also adds a legitimate feedback
- * point and the popup can add a phishing one.
+ * are never blocked. In the OSS build they are still scored silently in the
+ * background, and a PHISHING verdict on a trusted host is treated as a model
+ * error and fed back as a LEGITIMATE point (the trusted list is ground truth).
+ * "Proceed" also adds a legitimate feedback point and the popup can add a
+ * phishing one.
  */
 importScripts("config.js");   // self.IS_OSS_BUILD
 importScripts("features.js");  // self.NoPhishingFeatures
@@ -182,25 +185,37 @@ async function handlePage(msg, tabId) {
 
   const host = hostnameOf(url);
   const trusted = await getTrustedDomains();
-  if (host && trusted.includes(host)) return;
+  const isTrusted = !!(host && trusted.includes(host));
 
   try {
     const ds = await NoPhishingStore.buildDataset();
     const feats = NoPhishingFeatures.extractFeatures(url, msg.nbHyperlinks);
     const scaled = NoPhishingKNN.scale(feats, ds.scaler);
     const { label, ratio } = NoPhishingKNN.predict(scaled, ds.X, ds.y, ds.k);
-    if (label === 1) {
-      // Cache the scaled vector so "Proceed" can log it as a legitimate point.
-      await chrome.storage.session.set({ ["pending:" + url]: scaled });
-      // Pass the phishing confidence (share of neighbours voting phishing,
-      // 0..100) so the warning page can show how likely the verdict is.
-      const conf = Math.round(ratio * 100);
-      const warningUrl =
-        chrome.runtime.getURL("extension/warning.html") +
-        "?url=" + encodeURIComponent(url) +
-        "&conf=" + conf;
-      chrome.tabs.update(tabId, { url: warningUrl });
+    if (label !== 1) return;
+
+    if (isTrusted) {
+      // Trusted host = ground truth: the user has vouched for it, so we never
+      // block it. But a PHISHING verdict here means the model is wrong on a
+      // domain we know is good — feed that back SILENTLY as a legitimate point
+      // (the same dataset effect as "Proceed past the warning"), reusing the
+      // vector we just scored (it carries the live nb_hyperlinks feature).
+      // No warning page, no navigation, no user-facing notification.
+      await addPoint(scaled, 0);
+      return;
     }
+
+    // Untrusted phishing verdict: warn the user and let them decide.
+    // Cache the scaled vector so "Proceed" can log it as a legitimate point.
+    await chrome.storage.session.set({ ["pending:" + url]: scaled });
+    // Pass the phishing confidence (share of neighbours voting phishing,
+    // 0..100) so the warning page can show how likely the verdict is.
+    const conf = Math.round(ratio * 100);
+    const warningUrl =
+      chrome.runtime.getURL("extension/warning.html") +
+      "?url=" + encodeURIComponent(url) +
+      "&conf=" + conf;
+    chrome.tabs.update(tabId, { url: warningUrl });
   } catch (e) {
     console.error("No Phishing:", e);
   }
