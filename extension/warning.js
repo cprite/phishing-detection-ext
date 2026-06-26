@@ -24,6 +24,18 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   showConfidence();
 
+  // Show why the page was flagged when a deterministic rule (e.g. the Vercel
+  // lookalike detector) fired, so the user sees more than just a score.
+  function showReason() {
+    const el = document.getElementById('reason');
+    if (!el) return;
+    const reason = getQueryParam('reason');
+    if (!reason) return;
+    el.textContent = reason;
+    el.hidden = false;
+  }
+  showReason();
+
   function proceedToURL() {
     const actualURL = getQueryParam('url');
     if (!actualURL) {

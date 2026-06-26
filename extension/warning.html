@@ -66,6 +66,15 @@
             font-weight: 600;
             color: #e74c3c;
         }
+
+        .reason {
+            font-size: 16px;
+            color: #7f3b00;
+            background-color: #fdf2e0;
+            border-radius: 4px;
+            padding: 8px 12px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -74,6 +83,7 @@
         <h1>Phishing Warning!</h1>
         <p>This website may be a phishing site. Proceed with caution.</p>
         <p id="confidence" class="confidence" hidden></p>
+        <p id="reason" class="reason" hidden></p>
         <button id="proceedBtn">Proceed to URL</button>
         <button id="goBackBtn">Go Back</button>
     </div>

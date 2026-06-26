@@ -18,6 +18,7 @@ importScripts("config.js");   // self.IS_OSS_BUILD
 importScripts("features.js");  // self.NoPhishingFeatures
 importScripts("knn.js");       // self.NoPhishingKNN
 importScripts("storage.js");   // self.NoPhishingStore
+importScripts("lookalike.js"); // self.NoPhishingLookalike
 
 function hostnameOf(url) {
   try {
@@ -192,7 +193,15 @@ async function handlePage(msg, tabId) {
     const feats = NoPhishingFeatures.extractFeatures(url, msg.nbHyperlinks);
     const scaled = NoPhishingKNN.scale(feats, ds.scaler);
     const { label, ratio } = NoPhishingKNN.predict(scaled, ds.X, ds.y, ds.k);
-    if (label !== 1) return;
+
+    // Lookalike override: the lexical KNN misses brand-impersonation phishing on
+    // Vercel deploy hosts (clean-looking *.vercel.app subdomains). When the
+    // detector fires, force a PHISHING verdict regardless of the KNN label, with
+    // high confidence — this is a deterministic rule, not a vote.
+    const look = NoPhishingLookalike.check(url);
+    const phishing = label === 1 || look.hit;
+    if (!phishing) return;
+    const conf = look.hit ? Math.max(Math.round(ratio * 100), 95) : Math.round(ratio * 100);
 
     if (isTrusted) {
       // Trusted host = ground truth: the user has vouched for it, so we never
@@ -208,13 +217,13 @@ async function handlePage(msg, tabId) {
     // Untrusted phishing verdict: warn the user and let them decide.
     // Cache the scaled vector so "Proceed" can log it as a legitimate point.
     await chrome.storage.session.set({ ["pending:" + url]: scaled });
-    // Pass the phishing confidence (share of neighbours voting phishing,
-    // 0..100) so the warning page can show how likely the verdict is.
-    const conf = Math.round(ratio * 100);
-    const warningUrl =
+    // Pass the phishing confidence (0..100) so the warning page can show how
+    // likely the verdict is, plus the lookalike reason when the override fired.
+    let warningUrl =
       chrome.runtime.getURL("extension/warning.html") +
       "?url=" + encodeURIComponent(url) +
       "&conf=" + conf;
+    if (look.hit) warningUrl += "&reason=" + encodeURIComponent(look.reason);
     chrome.tabs.update(tabId, { url: warningUrl });
   } catch (e) {
     console.error("No Phishing:", e);
