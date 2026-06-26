@@ -132,7 +132,19 @@ Everything runs locally in your browser. No server, no network calls, no data le
 
 **Trusted sites** — clicking **Proceed** on a warning adds that page's hostname to a local trusted list (`chrome.storage.local`). Pages on a trusted hostname are **never blocked**, but in the open-source build they are still scored silently in the background: a trusted host is treated as ground truth, so if the model ever flags one as phishing that verdict is fed back as a `legitimate` point automatically (no warning, no prompt). Manage (and remove) trusted sites from the extension popup. The list never leaves your device.
 
-**Vercel lookalike detector** (`extension/lookalike.js`) — a deterministic rule that runs alongside the KNN. The lexical model has a blind spot on short, clean-looking phishing hosted on free deploy platforms (e.g. `messenger-clone-delta-two.vercel.app`, `toki-gov-tr-17.vercel.app`). When a hostname is on a Vercel deploy domain (`*.vercel.app`, legacy `*.now.sh`) **and** its subdomain impersonates a known brand or carries a credential-harvest keyword (`login`, `verify`, `secure`, `giris`, …), the page is forced to a PHISHING verdict regardless of the KNN vote, and the warning shows the reason. Brand matching is label-boundary aware so ambiguous short tokens don't false-fire (`ups` inside `startups`, `gov` inside `governance`). On a 25-URL live sample this lifted overall accuracy from 84% to 92% and phishing recall from 73% to 87% with no new false positives.
+**Lookalike-domain detector** (`extension/lookalike.js`) — a deterministic rule that runs alongside the KNN, which has a blind spot on short, clean-looking brand-impersonation phishing. It checks the hostname against a list of ~50 commonly-impersonated brands with four detectors:
+
+| Detector | Example | Confidence | Action |
+|---|---|---|---|
+| Subdomain / hyphen brand injection | `apple.account-secure.com`, `secure-paypal.example.com`, brand-bearing `*.vercel.app` / `*.now.sh` | 95% | force PHISHING |
+| Homoglyph swap (`0↔o`, `1↔l/i`, `rn↔m`, `vv↔w`) | `paypa1.com`, `m1crosoft.com`, `rnicrosoft.com` | 90% | force PHISHING |
+| Typosquat — Damerau-Levenshtein 1 edit | `microsfot.com`, `paypai.com` | 90% | force PHISHING |
+| Typosquat — 2 edits | `paypa11.com` | 80% | suspect only (no block) |
+| TLD spoofing — brand on non-official TLD | `paypal.net`, `netflix.org` | 80% | suspect only (no block) |
+
+A **forced** hit overrides the KNN vote and shows the reason on the warning page (e.g. *“Domain ‘paypa1.com’ appears to be a homoglyph of ‘paypal.com’”*). A **suspect** match (could be legitimate) never blocks on its own — it is recorded to `chrome.storage.local` (`lookalike_suspects`) and its reason rides along only if the page is blocked for another reason.
+
+False positives are guarded several ways: a whitelist of genuine registrable domains (and common ccTLD variants) short-circuits the real brand sites and all their subdomains; brand tokens match on label/hyphen boundaries, not raw substrings (so `startups` never matches `ups`, `governance` never matches `gov`); and fuzzy matching only runs for brands ≥ 5 chars of comparable length. On a 25-URL live OpenPhish sample plus a 45-case labelled test set the detector reached 100% recall with zero false positives — but it only knows the brands in its list, and registrable-domain parsing uses a small built-in suffix list rather than the full Public Suffix List.
 
 **The 11 features** — 10 lexical features derived from the URL string (length, character counts, digit ratio, suspicious-token hits) plus the page hyperlink count. WHOIS lookups, redirect-history probes, and word-length features that require a public-suffix-aware tokenizer are all omitted — they either cannot be computed client-side or cannot be reproduced in JS with exact parity to the training data. Feature formulas are verified to produce 800/800 exact-match parity with the training dataset columns.
 

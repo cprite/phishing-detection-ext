@@ -45,6 +45,22 @@ async function trustDomain(url) {
   }
 }
 
+// --- Suspect lookalikes (low-confidence, non-blocking) ---------------------
+
+// A "suspect" lookalike (e.g. a 2-edit typosquat that might be a real site) is
+// NOT blocked — it could be legitimate. We just keep a capped, de-duplicated
+// log in chrome.storage.local so the signal is recorded (and surfaceable later)
+// rather than silently dropped.
+async function recordSuspect(url, look) {
+  const host = look.host || hostnameOf(url);
+  const { lookalike_suspects } = await chrome.storage.local.get("lookalike_suspects");
+  const list = Array.isArray(lookalike_suspects) ? lookalike_suspects : [];
+  if (list.some((s) => s.host === host)) return; // one entry per host
+  list.push({ host: host, reason: look.reason, confidence: look.confidence, ts: new Date().toISOString() });
+  while (list.length > 50) list.shift();
+  await chrome.storage.local.set({ lookalike_suspects: list });
+}
+
 // --- Feedback points (in-browser retraining, OSS build only) ---------------
 
 // Add a scaled feedback point with the given label (0 legitimate, 1 phishing).
@@ -194,14 +210,20 @@ async function handlePage(msg, tabId) {
     const scaled = NoPhishingKNN.scale(feats, ds.scaler);
     const { label, ratio } = NoPhishingKNN.predict(scaled, ds.X, ds.y, ds.k);
 
-    // Lookalike override: the lexical KNN misses brand-impersonation phishing on
-    // Vercel deploy hosts (clean-looking *.vercel.app subdomains). When the
-    // detector fires, force a PHISHING verdict regardless of the KNN label, with
-    // high confidence — this is a deterministic rule, not a vote.
+    // Lookalike detector: the lexical KNN misses brand-impersonation phishing
+    // (typosquats, homoglyphs, subdomain brand injection, Vercel deploys). A
+    // high-confidence hit (look.hit) FORCES a PHISHING verdict regardless of the
+    // KNN vote — deterministic rule, not a vote. A weaker "suspect" match (look.
+    // suspect, e.g. a 2-edit typosquat that could be legitimate) never blocks on
+    // its own; it is only recorded, and its reason rides along if the page is
+    // blocked for another reason.
     const look = NoPhishingLookalike.check(url);
     const phishing = label === 1 || look.hit;
-    if (!phishing) return;
-    const conf = look.hit ? Math.max(Math.round(ratio * 100), 95) : Math.round(ratio * 100);
+    if (!phishing) {
+      if (look.suspect) await recordSuspect(url, look);
+      return;
+    }
+    const conf = look.hit ? Math.max(Math.round(ratio * 100), look.confidence) : Math.round(ratio * 100);
 
     if (isTrusted) {
       // Trusted host = ground truth: the user has vouched for it, so we never
@@ -223,7 +245,7 @@ async function handlePage(msg, tabId) {
       chrome.runtime.getURL("extension/warning.html") +
       "?url=" + encodeURIComponent(url) +
       "&conf=" + conf;
-    if (look.hit) warningUrl += "&reason=" + encodeURIComponent(look.reason);
+    if (look.reason) warningUrl += "&reason=" + encodeURIComponent(look.reason);
     chrome.tabs.update(tabId, { url: warningUrl });
   } catch (e) {
     console.error("No Phishing:", e);
