@@ -3,3 +3,8 @@
 pandas
 numpy
 scikit-learn
+
+# Notebook only (cyberguard_phishing_detection.ipynb).
+matplotlib
+seaborn
+joblib
