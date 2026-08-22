@@ -1,3 +1,5 @@
+
+
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a name="readme-top"></a>
 
@@ -42,7 +44,7 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#retrain-the-model">Retrain the Model</a></li>
+        <li><a href="#rebuild-the-seed-model">Rebuild the Seed Model</a></li>
       </ul>
     </li>
     <li><a href="#how-it-works">How It Works</a></li>
